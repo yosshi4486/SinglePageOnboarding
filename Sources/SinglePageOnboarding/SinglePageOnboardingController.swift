@@ -65,6 +65,18 @@ open class SinglePageOnboardingController: UIViewController {
     ///
     private class _View: UIView {
 
+        private enum Section: Int, CaseIterable {
+            case header
+            case main
+            case footer
+        }
+
+        private enum Item: Hashable {
+            case header
+            case footer
+            case onboarding(OnboadingItem)
+        }
+
         final class HeaderView: UICollectionViewListCell {
 
             let titleLabel: UILabel = {
@@ -145,7 +157,7 @@ open class SinglePageOnboardingController: UIViewController {
                 stackView.axis = .horizontal
                 stackView.alignment = .center
                 stackView.distribution = .fill
-                stackView.spacing = 8
+                stackView.spacing = 15
                 return stackView
             }()
 
@@ -189,6 +201,20 @@ open class SinglePageOnboardingController: UIViewController {
                 }
             }
 
+            private var imageWidthConstaint: NSLayoutConstraint!
+            private var imageHeightConstraint: NSLayoutConstraint!
+
+            var imageSize: CGSize {
+                get {
+                    return .init(width: imageWidthConstaint.constant, height: imageHeightConstraint.constant)
+                }
+
+                set {
+                    imageWidthConstaint.constant = newValue.width
+                    imageHeightConstraint.constant = newValue.height
+                }
+            }
+
             override init(frame: CGRect) {
                 super.init(frame: frame)
                 setup()
@@ -213,15 +239,18 @@ open class SinglePageOnboardingController: UIViewController {
 
                 bottomConstraint = containerStack.bottomAnchor.constraint(equalTo: bottomAnchor)
                 NSLayoutConstraint.activate([
-                    containerStack.leadingAnchor.constraint(equalTo: leadingAnchor),
-                    containerStack.trailingAnchor.constraint(equalTo: trailingAnchor),
+                    containerStack.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+                    containerStack.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
                     containerStack.topAnchor.constraint(equalTo: topAnchor),
                     bottomConstraint
                 ])
 
+                imageWidthConstaint = imageView.widthAnchor.constraint(equalToConstant: 50)
+                imageHeightConstraint = imageView.heightAnchor.constraint(equalToConstant: 50)
+
                 NSLayoutConstraint.activate([
-                    imageView.heightAnchor.constraint(equalToConstant: 30),
-                    imageView.widthAnchor.constraint(equalToConstant: 30)
+                    imageWidthConstaint,
+                    imageHeightConstraint
                 ])
 
                 NSLayoutConstraint.activate([
@@ -299,17 +328,9 @@ open class SinglePageOnboardingController: UIViewController {
             return UICollectionView(frame: .zero, collectionViewLayout: layout)
         }()
 
-        private enum Section: Int, CaseIterable {
-            case header
-            case main
-            case footer
-        }
+        weak var header: HeaderView?
 
-        private enum Item: Hashable {
-            case header
-            case footer
-            case onboarding(OnboadingItem)
-        }
+        weak var footer: FooterView?
 
         private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 
@@ -330,17 +351,21 @@ open class SinglePageOnboardingController: UIViewController {
                     cell.descriptionLabel.text = onboardingItem.description
                     cell.imageView.image = onboardingItem.image
                     cell.imageView.tintColor = onboardingItem.imageColor
+                    cell.imageSize = onboardingItem.imageSize
                     cell.spaceBetweenItem = 50
+                    cell.containerStack.spacing = onboardingItem.spacingBetweenImageAndContentView
                 }
             }
 
             let headerRegistration = UICollectionView.CellRegistration<HeaderView, Item> { [weak self] cell, indexPath, item in
                 cell.titleLabel.text = self?.onboardingTitle
+                self?.header = cell
             }
 
             let footerRegistration = UICollectionView.CellRegistration<FooterView, Item> { [weak self] cell, indexPath, item in
                 cell.button.setTitle(self?.buttonTitle, for: .normal)
                 cell.topConstraint.constant = 300
+                self?.footer = cell
             }
 
             dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: containerCollectionView, cellProvider: { collectionView, indexPath, item in
