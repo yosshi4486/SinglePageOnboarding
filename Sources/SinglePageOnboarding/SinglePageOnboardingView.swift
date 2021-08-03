@@ -73,6 +73,7 @@ public struct SinglePageOnboardingView: View {
                 .cornerRadius(10)
 
             }
+            .padding(.bottom, 30)
 
         }
         .padding(.horizontal, 30)
