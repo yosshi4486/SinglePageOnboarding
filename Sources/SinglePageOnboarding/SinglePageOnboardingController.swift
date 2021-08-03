@@ -17,13 +17,13 @@ open class SinglePageOnboardingController: UIViewController {
 
     public let buttonTitle: String
 
-    public let accentColor: UIColor
+    public let accentColor: UIColor?
 
     public let onCommit: () -> Void
 
     private var _view: _View!
 
-    public init(onboardingTitle: String, onboardingItems: [OnboadingItem], orderedFooterContents: [OnboardingFooterContent]?, buttonTitle: String, accentColor: UIColor = .systemBlue, onCommit: @escaping () -> Void) {
+    public init(onboardingTitle: String, onboardingItems: [OnboadingItem], orderedFooterContents: [OnboardingFooterContent]?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
         precondition(onboardingItems.count <= 3, "The count of onboarding items must be smaller than 3.")
 
         self.onboardingTitle = onboardingTitle
@@ -117,7 +117,6 @@ open class SinglePageOnboardingController: UIViewController {
 
             let button: UIButton = {
                 let aButton = UIButton()
-                aButton.backgroundColor = .systemBlue
                 aButton.clipsToBounds = true
                 aButton.layer.cornerRadius = 10
                 aButton.titleLabel?.font = .preferredFont(forTextStyle: .body).bold()
@@ -298,11 +297,11 @@ open class SinglePageOnboardingController: UIViewController {
 
         public let buttonTitle: String
 
-        public let accentColor: UIColor
+        public let accentColor: UIColor?
 
         public let onCommit: () -> Void
 
-        public init(onboardingTitle: String, onboardingItems: [OnboadingItem], orderedFooterContents: [OnboardingFooterContent]?, buttonTitle: String, accentColor: UIColor = .systemBlue, onCommit: @escaping () -> Void) {
+        public init(onboardingTitle: String, onboardingItems: [OnboadingItem], orderedFooterContents: [OnboardingFooterContent]?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
             precondition(onboardingItems.count <= 3, "The count of onboarding items must be smaller than 3.")
 
             self.onboardingTitle = onboardingTitle
@@ -345,12 +344,12 @@ open class SinglePageOnboardingController: UIViewController {
                 containerCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
             ])
 
-            let cellRegistration = UICollectionView.CellRegistration<Cell, Item> { cell, indexPath, item in
+            let cellRegistration = UICollectionView.CellRegistration<Cell, Item> { [weak self] cell, indexPath, item in
                 if case .onboarding(let onboardingItem) = item {
                     cell.titleLabel.text = onboardingItem.title
                     cell.descriptionLabel.text = onboardingItem.description
                     cell.imageView.image = onboardingItem.image
-                    cell.imageView.tintColor = onboardingItem.imageColor
+                    cell.imageView.tintColor = onboardingItem.imageColor ?? self?.accentColor
                     cell.imageSize = onboardingItem.imageSize
                     cell.spaceBetweenItem = 50
                     cell.containerStack.spacing = onboardingItem.spacingBetweenImageAndContentView
@@ -364,6 +363,7 @@ open class SinglePageOnboardingController: UIViewController {
 
             let footerRegistration = UICollectionView.CellRegistration<FooterView, Item> { [weak self] cell, indexPath, item in
                 cell.button.setTitle(self?.buttonTitle, for: .normal)
+                cell.button.backgroundColor = self?.accentColor ?? .systemBlue
                 cell.topConstraint.constant = 300
                 self?.footer = cell
             }
@@ -411,7 +411,7 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
 
     public let buttonTitle: String
 
-    public let accentColor: UIColor = .systemBlue
+    public let accentColor: UIColor?
 
     public let onCommit: () -> Void
 
@@ -449,7 +449,6 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
         SinglePageOnboardingView(
             onboardingTitle: "What's New",
             onboardingItems: [
-
                 OnboadingItem(image: UIImage(systemName: "heart.fill")!, imageColor: UIColor.systemPink, title: "More Personalized", description: "Top Stories picked for you and recommendations from Siri."),
                 OnboadingItem(image: UIImage(systemName: "newspaper")!, imageColor: UIColor.systemRed, title: "New Articles Tab", description: "Discover latest articles."),
                 OnboadingItem(image: UIImage(systemName: "play.rectangle.fill")!.withTintColor(.systemBlue, renderingMode: .alwaysTemplate), imageColor: UIColor.blue, title: "Watch Video News", description: "You can now watch video news in Video News Tab."),
@@ -462,6 +461,7 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
                 .text("Long Long Long Long Long time ago.")
             ],
             buttonTitle: "Next",
+            accentColor: UIColor.purple,
             onCommit: { }
         )
 //        .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
