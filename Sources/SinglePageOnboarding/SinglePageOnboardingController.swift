@@ -302,8 +302,6 @@ open class SinglePageOnboardingController: UIViewController {
         public let onCommit: () -> Void
 
         public init(onboardingTitle: String, onboardingItems: [OnboadingItem], orderedFooterContents: [OnboardingFooterContent]?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
-            precondition(onboardingItems.count <= 3, "The count of onboarding items must be smaller than 3.")
-
             self.onboardingTitle = onboardingTitle
             self.onboardingItems = onboardingItems
             self.orderedFooterContents = orderedFooterContents
