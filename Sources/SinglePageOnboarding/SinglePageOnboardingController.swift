@@ -55,6 +55,14 @@ open class SinglePageOnboardingController: UIViewController {
         view = _view
     }
 
+    /// A internal view that manages onboarding.
+    ///
+    /// # The Reasons to Use UICollectionLayoutListConfiguration
+    ///
+    /// Onboarding View should adopt dynamic type and adaptive layout, but implementing them by UIStackView, or some plane views are very troublesome.
+    /// UICollectionView with UICollectionLayoutListConfiguration make it easy to implement adaptive onboarding view.
+    ///
+    ///
     private class _View: UIView {
 
         final class HeaderView: UICollectionReusableView {
@@ -63,7 +71,7 @@ open class SinglePageOnboardingController: UIViewController {
                 let label = UILabel()
                 label.numberOfLines = 0
                 label.adjustsFontForContentSizeCategory = true
-                label.font = .systemFont(ofSize: 34, weight: .bold)
+                label.font = .preferredFont(forTextStyle: .largeTitle).bold()
                 label.textAlignment = .center
                 return label
             }()
@@ -98,6 +106,8 @@ open class SinglePageOnboardingController: UIViewController {
                 aButton.backgroundColor = .systemBlue
                 aButton.clipsToBounds = true
                 aButton.layer.cornerRadius = 10
+                aButton.titleLabel?.font = .preferredFont(forTextStyle: .body).bold()
+                aButton.titleLabel?.adjustsFontForContentSizeCategory = true
                 return aButton
             }()
 
@@ -294,7 +304,24 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
             buttonTitle: "Next",
             onCommit: { }
         )
+//        .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
     }
 
 }
 
+private extension UIFont {
+
+    func withTraits(traits: UIFontDescriptor.SymbolicTraits) -> UIFont {
+        let descriptor = fontDescriptor.withSymbolicTraits(traits)
+        return UIFont(descriptor: descriptor!, size: 0) //size 0 means keep the size as it is
+    }
+
+    func bold() -> UIFont {
+        return withTraits(traits: .traitBold)
+    }
+
+    func italic() -> UIFont {
+        return withTraits(traits: .traitItalic)
+    }
+
+}
