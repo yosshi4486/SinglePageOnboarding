@@ -65,7 +65,7 @@ open class SinglePageOnboardingController: UIViewController {
     ///
     private class _View: UIView {
 
-        final class HeaderView: UICollectionReusableView {
+        final class HeaderView: UICollectionViewListCell {
 
             let titleLabel: UILabel = {
                 let label = UILabel()
@@ -99,7 +99,7 @@ open class SinglePageOnboardingController: UIViewController {
 
         }
 
-        final class FooterView: UICollectionReusableView {
+        final class FooterView: UICollectionViewListCell {
 
             var topConstraint: NSLayoutConstraint!
 
@@ -164,6 +164,7 @@ open class SinglePageOnboardingController: UIViewController {
                 label.numberOfLines = 0
                 label.font = .preferredFont(forTextStyle: .headline)
                 label.textColor = .label
+                label.adjustsFontForContentSizeCategory = true
                 return label
             }()
 
@@ -172,6 +173,7 @@ open class SinglePageOnboardingController: UIViewController {
                 label.numberOfLines = 0
                 label.font = .preferredFont(forTextStyle: .body)
                 label.textColor = .secondaryLabel
+                label.adjustsFontForContentSizeCategory = true
                 return label
             }()
 
@@ -232,6 +234,29 @@ open class SinglePageOnboardingController: UIViewController {
                     descriptionLabel.bottomAnchor.constraint(equalTo: trailingContentView.bottomAnchor)
                 ])
 
+                if traitCollection.preferredContentSizeCategory >= .accessibilityMedium {
+                    containerStack.axis = .vertical
+                    containerStack.alignment = .leading
+                } else {
+                    containerStack.axis = .horizontal
+                    containerStack.alignment = .center
+                }
+
+            }
+
+            override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+                super.traitCollectionDidChange(previousTraitCollection)
+
+                /*
+                 Best practice for adapting dynamic type by using UIStackView.
+                 */
+                if traitCollection.preferredContentSizeCategory >= .accessibilityMedium {
+                    containerStack.axis = .vertical
+                    containerStack.alignment = .leading
+                } else {
+                    containerStack.axis = .horizontal
+                    containerStack.alignment = .center
+                }
             }
 
         }
@@ -270,17 +295,23 @@ open class SinglePageOnboardingController: UIViewController {
         let containerCollectionView: UICollectionView = {
             var configuration = UICollectionLayoutListConfiguration(appearance: .plain)
             configuration.showsSeparators = false
-            configuration.headerMode = .supplementary
-            configuration.footerMode = .supplementary
             let layout = UICollectionViewCompositionalLayout.list(using: configuration)
             return UICollectionView(frame: .zero, collectionViewLayout: layout)
         }()
 
-        private enum Section: Int {
+        private enum Section: Int, CaseIterable {
+            case header
             case main
+            case footer
         }
 
-        private var dataSource: UICollectionViewDiffableDataSource<Section, OnboadingItem>!
+        private enum Item: Hashable {
+            case header
+            case footer
+            case onboarding(OnboadingItem)
+        }
+
+        private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 
         private func setup() {
             addSubview(containerCollectionView)
@@ -293,46 +324,51 @@ open class SinglePageOnboardingController: UIViewController {
                 containerCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
             ])
 
-            let cellRegistration = UICollectionView.CellRegistration<Cell, OnboadingItem> { cell, indexPath, item in
-                cell.titleLabel.text = item.title
-                cell.descriptionLabel.text = item.description
-                cell.imageView.image = item.image
-                cell.imageView.tintColor = item.imageColor
-                cell.spaceBetweenItem = 50
-            }
-
-            let headerRegistration = UICollectionView.SupplementaryRegistration<HeaderView>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] supplymentaryView, elementKind, indexPath in
-                supplymentaryView.titleLabel.text = self?.onboardingTitle
-            }
-
-            let footerRegistration = UICollectionView.SupplementaryRegistration<FooterView>(elementKind: UICollectionView.elementKindSectionFooter) { [weak self] supplymentaryView, elementKind, indexPath in
-                supplymentaryView.button.setTitle(self?.buttonTitle, for: .normal)
-                supplymentaryView.topConstraint.constant = 300
-            }
-
-            dataSource = UICollectionViewDiffableDataSource<Section, OnboadingItem>(collectionView: containerCollectionView, cellProvider: { collectionView, indexPath, item in
-                return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
-            })
-
-            dataSource.supplementaryViewProvider = { (collectionView, elementKind, indexPath) in
-                if elementKind == UICollectionView.elementKindSectionHeader {
-                    return collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath)
-                } else {
-                    return collectionView.dequeueConfiguredReusableSupplementary(using: footerRegistration, for: indexPath)
+            let cellRegistration = UICollectionView.CellRegistration<Cell, Item> { cell, indexPath, item in
+                if case .onboarding(let onboardingItem) = item {
+                    cell.titleLabel.text = onboardingItem.title
+                    cell.descriptionLabel.text = onboardingItem.description
+                    cell.imageView.image = onboardingItem.image
+                    cell.imageView.tintColor = onboardingItem.imageColor
+                    cell.spaceBetweenItem = 50
                 }
             }
+
+            let headerRegistration = UICollectionView.CellRegistration<HeaderView, Item> { [weak self] cell, indexPath, item in
+                cell.titleLabel.text = self?.onboardingTitle
+            }
+
+            let footerRegistration = UICollectionView.CellRegistration<FooterView, Item> { [weak self] cell, indexPath, item in
+                cell.button.setTitle(self?.buttonTitle, for: .normal)
+                cell.topConstraint.constant = 300
+            }
+
+            dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: containerCollectionView, cellProvider: { collectionView, indexPath, item in
+                switch item {
+                case .header:
+                    return collectionView.dequeueConfiguredReusableCell(using: headerRegistration, for: indexPath, item: item)
+                case .footer:
+                    return collectionView.dequeueConfiguredReusableCell(using: footerRegistration, for: indexPath, item: item)
+                case .onboarding(_):
+                    return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+                }
+
+            })
 
             containerCollectionView.dataSource = dataSource
             containerCollectionView.translatesAutoresizingMaskIntoConstraints = false
             containerCollectionView.allowsSelection = false
 
-            var snapshot = NSDiffableDataSourceSnapshot<Section, OnboadingItem>()
-            snapshot.appendSections([Section.main])
-            snapshot.appendItems(onboardingItems)
+            var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+            snapshot.appendSections(Section.allCases)
+            snapshot.appendItems([.header], toSection: .header)
+            snapshot.appendItems(onboardingItems.map({ Item.onboarding($0) }), toSection: .main)
+            snapshot.appendItems([.footer], toSection: .footer)
             dataSource.apply(snapshot, animatingDifferences: false)
         }
 
     }
+    
 
 }
 
