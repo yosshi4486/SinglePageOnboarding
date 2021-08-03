@@ -101,6 +101,8 @@ open class SinglePageOnboardingController: UIViewController {
 
         final class FooterView: UICollectionReusableView {
 
+            var topConstraint: NSLayoutConstraint!
+
             let button: UIButton = {
                 let aButton = UIButton()
                 aButton.backgroundColor = .systemBlue
@@ -124,14 +126,114 @@ open class SinglePageOnboardingController: UIViewController {
                 addSubview(button)
                 button.translatesAutoresizingMaskIntoConstraints = false
 
+                topConstraint = button.topAnchor.constraint(equalTo: topAnchor)
+
                 NSLayoutConstraint.activate([
                     button.heightAnchor.constraint(equalToConstant: 50),
-                    button.topAnchor.constraint(equalTo: topAnchor),
+                    topConstraint,
                     button.bottomAnchor.constraint(equalTo: bottomAnchor),
                     button.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
                     button.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
                 ])
             }
+        }
+
+        final class Cell: UICollectionViewListCell {
+
+            let containerStack: UIStackView = {
+                let stackView = UIStackView()
+                stackView.axis = .horizontal
+                stackView.alignment = .center
+                stackView.distribution = .fill
+                stackView.spacing = 8
+                return stackView
+            }()
+
+            let imageView: UIImageView = {
+                let imageView = UIImageView()
+                return imageView
+            }()
+
+            let trailingContentView: UIView = {
+                let view = UIView()
+                return view
+            }()
+
+            let titleLabel: UILabel = {
+                let label = UILabel()
+                label.numberOfLines = 0
+                label.font = .preferredFont(forTextStyle: .headline)
+                label.textColor = .label
+                return label
+            }()
+
+            let descriptionLabel: UILabel = {
+                let label = UILabel()
+                label.numberOfLines = 0
+                label.font = .preferredFont(forTextStyle: .body)
+                label.textColor = .secondaryLabel
+                return label
+            }()
+
+            private var bottomConstraint: NSLayoutConstraint!
+
+            var spaceBetweenItem: CGFloat {
+                get {
+                    return bottomConstraint.constant * -1
+                }
+
+                set {
+                    bottomConstraint.constant = newValue * -1
+                }
+            }
+
+            override init(frame: CGRect) {
+                super.init(frame: frame)
+                setup()
+            }
+
+            required init?(coder: NSCoder) {
+                fatalError("init(coder:) has not been implemented")
+            }
+
+            private func setup() {
+                addSubview(containerStack)
+                containerStack.addArrangedSubview(imageView)
+                containerStack.addArrangedSubview(trailingContentView)
+                trailingContentView.addSubview(titleLabel)
+                trailingContentView.addSubview(descriptionLabel)
+
+                containerStack.translatesAutoresizingMaskIntoConstraints = false
+                imageView.translatesAutoresizingMaskIntoConstraints = false
+                trailingContentView.translatesAutoresizingMaskIntoConstraints = false
+                titleLabel.translatesAutoresizingMaskIntoConstraints = false
+                descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
+
+                bottomConstraint = containerStack.bottomAnchor.constraint(equalTo: bottomAnchor)
+                NSLayoutConstraint.activate([
+                    containerStack.leadingAnchor.constraint(equalTo: leadingAnchor),
+                    containerStack.trailingAnchor.constraint(equalTo: trailingAnchor),
+                    containerStack.topAnchor.constraint(equalTo: topAnchor),
+                    bottomConstraint
+                ])
+
+                NSLayoutConstraint.activate([
+                    imageView.heightAnchor.constraint(equalToConstant: 30),
+                    imageView.widthAnchor.constraint(equalToConstant: 30)
+                ])
+
+                NSLayoutConstraint.activate([
+                    titleLabel.topAnchor.constraint(equalTo: trailingContentView.topAnchor),
+                    titleLabel.leadingAnchor.constraint(equalTo: trailingContentView.leadingAnchor),
+                    titleLabel.trailingAnchor.constraint(equalTo: trailingContentView.trailingAnchor),
+                    descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor),
+                    descriptionLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+                    descriptionLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
+                    descriptionLabel.bottomAnchor.constraint(equalTo: trailingContentView.bottomAnchor)
+                ])
+
+            }
+
         }
 
         public let onboardingTitle: String
@@ -185,22 +287,18 @@ open class SinglePageOnboardingController: UIViewController {
             containerCollectionView.translatesAutoresizingMaskIntoConstraints = false
 
             NSLayoutConstraint.activate([
-                containerCollectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
-                containerCollectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
+                containerCollectionView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+                containerCollectionView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
                 containerCollectionView.topAnchor.constraint(equalTo: topAnchor),
                 containerCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
             ])
 
-            let cellRegistration = UICollectionView.CellRegistration<UICollectionViewListCell, OnboadingItem> { cell, indexPath, item in
-                var cellConfiguration: UIListContentConfiguration = .subtitleCell()
-                cellConfiguration.text = item.title
-                cellConfiguration.textProperties.font = .preferredFont(forTextStyle: .headline)
-                cellConfiguration.secondaryText = item.description
-                cellConfiguration.secondaryTextProperties.font = .preferredFont(forTextStyle: .body)
-                cellConfiguration.secondaryTextProperties.color = .secondaryLabel
-                cellConfiguration.image = item.image
-                cellConfiguration.imageProperties.tintColor = item.imageColor
-                cell.contentConfiguration = cellConfiguration
+            let cellRegistration = UICollectionView.CellRegistration<Cell, OnboadingItem> { cell, indexPath, item in
+                cell.titleLabel.text = item.title
+                cell.descriptionLabel.text = item.description
+                cell.imageView.image = item.image
+                cell.imageView.tintColor = item.imageColor
+                cell.spaceBetweenItem = 50
             }
 
             let headerRegistration = UICollectionView.SupplementaryRegistration<HeaderView>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] supplymentaryView, elementKind, indexPath in
@@ -209,6 +307,7 @@ open class SinglePageOnboardingController: UIViewController {
 
             let footerRegistration = UICollectionView.SupplementaryRegistration<FooterView>(elementKind: UICollectionView.elementKindSectionFooter) { [weak self] supplymentaryView, elementKind, indexPath in
                 supplymentaryView.button.setTitle(self?.buttonTitle, for: .normal)
+                supplymentaryView.topConstraint.constant = 300
             }
 
             dataSource = UICollectionViewDiffableDataSource<Section, OnboadingItem>(collectionView: containerCollectionView, cellProvider: { collectionView, indexPath, item in
