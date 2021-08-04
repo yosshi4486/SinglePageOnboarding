@@ -150,9 +150,9 @@ open class SinglePageOnboardingController: UIViewController {
                 button.translatesAutoresizingMaskIntoConstraints = false
 
                 NSLayoutConstraint.activate([
-                    button.heightAnchor.constraint(equalToConstant: 50),
+                    button.heightAnchor.constraint(greaterThanOrEqualToConstant: 50),
                     button.topAnchor.constraint(equalTo: topAnchor),
-                    button.bottomAnchor.constraint(equalTo: bottomAnchor),
+                    button.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -15),
                     button.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
                     button.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
                 ])
@@ -378,12 +378,16 @@ open class SinglePageOnboardingController: UIViewController {
         private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 
         private func setup() {
+            layoutMargins.left = 50
+            layoutMargins.right = 50
+            containerCollectionView.preservesSuperviewLayoutMargins = true
+
             addSubview(containerCollectionView)
             containerCollectionView.translatesAutoresizingMaskIntoConstraints = false
 
             NSLayoutConstraint.activate([
-                containerCollectionView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-                containerCollectionView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
+                containerCollectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
+                containerCollectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
                 containerCollectionView.topAnchor.constraint(equalTo: topAnchor),
                 containerCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
             ])
@@ -444,7 +448,6 @@ open class SinglePageOnboardingController: UIViewController {
 
         func adjustSpace() {
 
-            let footerButtomSpace: CGFloat = 15
             let footerHeight: CGFloat = footer?.bounds.size.height ?? 0
 
             let actualContentHeight = containerCollectionView.contentSize.height - spacerHeight
@@ -452,12 +455,13 @@ open class SinglePageOnboardingController: UIViewController {
                 spacerHeight = 0
             } else {
                 let remainingSpaceHeight = bounds.size.height - actualContentHeight
-                spacerHeight = remainingSpaceHeight - footerButtomSpace - footerHeight
+                spacerHeight = remainingSpaceHeight - footerHeight
             }
 
-            containerCollectionView.isScrollEnabled = containerCollectionView.contentSize.height >= bounds.size.height
-
             containerCollectionView.reloadData()
+
+            let adjustedActualContentHeight = containerCollectionView.contentSize.height - spacerHeight
+            containerCollectionView.isScrollEnabled = adjustedActualContentHeight >= bounds.size.height
         }
 
     }
@@ -532,6 +536,7 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
             accentColor: UIColor.purple,
             onCommit: { }
         )
+        .ignoresSafeArea()
         .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
     }
 
