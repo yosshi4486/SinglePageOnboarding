@@ -55,6 +55,18 @@ open class SinglePageOnboardingController: UIViewController {
         view = _view
     }
 
+    open override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        _view.adjustSpace()
+    }
+
+    open override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+
+        _view.adjustSpace()
+    }
+
     /// A internal view that manages onboarding.
     ///
     /// # The Reasons to Use UICollectionLayoutListConfiguration
@@ -68,12 +80,14 @@ open class SinglePageOnboardingController: UIViewController {
         private enum Section: Int, CaseIterable {
             case header
             case main
+            case spacer
             case footer
         }
 
         private enum Item: Hashable {
             case header
             case footer
+            case spacer
             case onboarding(OnboadingItem)
         }
 
@@ -113,8 +127,6 @@ open class SinglePageOnboardingController: UIViewController {
 
         final class FooterView: UICollectionViewListCell {
 
-            var topConstraint: NSLayoutConstraint!
-
             let button: UIButton = {
                 let aButton = UIButton()
                 aButton.clipsToBounds = true
@@ -137,16 +149,48 @@ open class SinglePageOnboardingController: UIViewController {
                 addSubview(button)
                 button.translatesAutoresizingMaskIntoConstraints = false
 
-                topConstraint = button.topAnchor.constraint(equalTo: topAnchor)
-
                 NSLayoutConstraint.activate([
                     button.heightAnchor.constraint(equalToConstant: 50),
-                    topConstraint,
+                    button.topAnchor.constraint(equalTo: topAnchor),
                     button.bottomAnchor.constraint(equalTo: bottomAnchor),
                     button.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
                     button.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
                 ])
             }
+        }
+
+        final class Spacer: UICollectionViewListCell {
+
+            var heightConstraint: NSLayoutConstraint!
+
+            let label: UILabel = {
+                return UILabel()
+            }()
+
+            override init(frame: CGRect) {
+                super.init(frame: frame)
+                setup()
+            }
+
+            required init?(coder: NSCoder) {
+                fatalError("init(coder:) has not been implemented")
+            }
+
+            private func setup() {
+                addSubview(label)
+                label.translatesAutoresizingMaskIntoConstraints = false
+
+                heightConstraint = label.heightAnchor.constraint(equalToConstant: 0)
+
+                NSLayoutConstraint.activate([
+                    heightConstraint,
+                    label.topAnchor.constraint(equalTo: topAnchor),
+                    label.bottomAnchor.constraint(equalTo: bottomAnchor),
+                    label.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+                    label.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
+                ])
+            }
+
         }
 
         final class Cell: UICollectionViewListCell {
@@ -325,6 +369,8 @@ open class SinglePageOnboardingController: UIViewController {
             return UICollectionView(frame: .zero, collectionViewLayout: layout)
         }()
 
+        private var spacerHeight: CGFloat = 0
+
         weak var header: HeaderView?
 
         weak var footer: FooterView?
@@ -362,8 +408,11 @@ open class SinglePageOnboardingController: UIViewController {
             let footerRegistration = UICollectionView.CellRegistration<FooterView, Item> { [weak self] cell, indexPath, item in
                 cell.button.setTitle(self?.buttonTitle, for: .normal)
                 cell.button.backgroundColor = self?.accentColor ?? .systemBlue
-                cell.topConstraint.constant = 300
                 self?.footer = cell
+            }
+
+            let spacerRegistration = UICollectionView.CellRegistration<Spacer, Item> { [weak self] cell, indexPath, item in
+                cell.heightConstraint.constant = self?.spacerHeight ?? 0
             }
 
             dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: containerCollectionView, cellProvider: { collectionView, indexPath, item in
@@ -374,6 +423,8 @@ open class SinglePageOnboardingController: UIViewController {
                     return collectionView.dequeueConfiguredReusableCell(using: footerRegistration, for: indexPath, item: item)
                 case .onboarding(_):
                     return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
+                case .spacer:
+                    return collectionView.dequeueConfiguredReusableCell(using: spacerRegistration, for: indexPath, item: item)
                 }
 
             })
@@ -386,8 +437,27 @@ open class SinglePageOnboardingController: UIViewController {
             snapshot.appendSections(Section.allCases)
             snapshot.appendItems([.header], toSection: .header)
             snapshot.appendItems(onboardingItems.map({ Item.onboarding($0) }), toSection: .main)
+            snapshot.appendItems([.spacer], toSection: .spacer)
             snapshot.appendItems([.footer], toSection: .footer)
             dataSource.apply(snapshot, animatingDifferences: false)
+        }
+
+        func adjustSpace() {
+
+            let footerButtomSpace: CGFloat = 15
+            let footerHeight: CGFloat = footer?.bounds.size.height ?? 0
+
+            let actualContentHeight = containerCollectionView.contentSize.height - spacerHeight
+            if actualContentHeight >= bounds.size.height {
+                spacerHeight = 0
+            } else {
+                let remainingSpaceHeight = bounds.size.height - actualContentHeight
+                spacerHeight = remainingSpaceHeight - footerButtomSpace - footerHeight
+            }
+
+            containerCollectionView.isScrollEnabled = containerCollectionView.contentSize.height >= bounds.size.height
+
+            containerCollectionView.reloadData()
         }
 
     }
@@ -462,7 +532,7 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
             accentColor: UIColor.purple,
             onCommit: { }
         )
-//        .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
+        .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
     }
 
 }
