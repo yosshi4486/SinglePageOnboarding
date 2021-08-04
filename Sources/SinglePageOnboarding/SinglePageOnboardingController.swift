@@ -13,7 +13,7 @@ public class SinglePageOnboardingController: UIViewController {
 
     public let onboardingItems: [OnboadingItem]
 
-    public let orderedFooterContents: [OnboardingFooterContent]?
+    public let footerAttributedString: NSAttributedString?
 
     public let buttonTitle: String
 
@@ -25,12 +25,12 @@ public class SinglePageOnboardingController: UIViewController {
 
     private var executesInitialAdjustment: Bool = true
 
-    public init(onboardingTitle: String, onboardingItems: [OnboadingItem], orderedFooterContents: [OnboardingFooterContent]?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
+    public init(onboardingTitle: String, onboardingItems: [OnboadingItem], footerAttributedString: NSAttributedString?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
         precondition(onboardingItems.count <= 3, "The count of onboarding items must be smaller than 3.")
 
         self.onboardingTitle = onboardingTitle
         self.onboardingItems = onboardingItems
-        self.orderedFooterContents = orderedFooterContents
+        self.footerAttributedString = footerAttributedString
         self.buttonTitle = buttonTitle
         self.accentColor = accentColor
         self.onCommit = onCommit
@@ -48,7 +48,7 @@ public class SinglePageOnboardingController: UIViewController {
         _view = _View(
             onboardingTitle: onboardingTitle,
             onboardingItems: onboardingItems,
-            orderedFooterContents: orderedFooterContents,
+            footerAttributedString: footerAttributedString,
             buttonTitle: buttonTitle,
             accentColor: accentColor,
             onCommit: onCommit
@@ -134,6 +134,15 @@ public class SinglePageOnboardingController: UIViewController {
 
         final class FooterView: UICollectionViewListCell {
 
+            let textView: UITextView = {
+                let view = UITextView()
+                view.isEditable = false
+                view.isSelectable = true
+                view.isUserInteractionEnabled = true
+                view.isScrollEnabled = false
+                return view
+            }()
+
             let button: UIButton = {
                 let aButton = UIButton()
                 aButton.clipsToBounds = true
@@ -153,16 +162,25 @@ public class SinglePageOnboardingController: UIViewController {
             }
 
             private func setup() {
+                addSubview(textView)
                 addSubview(button)
+                textView.translatesAutoresizingMaskIntoConstraints = false
                 button.translatesAutoresizingMaskIntoConstraints = false
 
                 NSLayoutConstraint.activate([
-                    button.heightAnchor.constraint(greaterThanOrEqualToConstant: 50),
-                    button.topAnchor.constraint(equalTo: topAnchor),
-                    button.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -15),
-                    button.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-                    button.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
+                    textView.topAnchor.constraint(equalTo: topAnchor),
+                    textView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+                    textView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
                 ])
+
+                NSLayoutConstraint.activate([
+                    button.heightAnchor.constraint(greaterThanOrEqualToConstant: 50),
+                    button.topAnchor.constraint(equalTo: textView.bottomAnchor, constant: layoutMargins.top),
+                    button.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -15),
+                    button.leadingAnchor.constraint(equalTo: textView.leadingAnchor),
+                    button.trailingAnchor.constraint(equalTo: textView.trailingAnchor)
+                ])
+
             }
         }
 
@@ -344,7 +362,7 @@ public class SinglePageOnboardingController: UIViewController {
 
         public let onboardingItems: [OnboadingItem]
 
-        public let orderedFooterContents: [OnboardingFooterContent]?
+        public let footerAttributedString: NSAttributedString?
 
         public let buttonTitle: String
 
@@ -352,10 +370,24 @@ public class SinglePageOnboardingController: UIViewController {
 
         public let onCommit: () -> Void
 
-        public init(onboardingTitle: String, onboardingItems: [OnboadingItem], orderedFooterContents: [OnboardingFooterContent]?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
+        private let containerCollectionView: UICollectionView = {
+            var configuration = UICollectionLayoutListConfiguration(appearance: .plain)
+            configuration.showsSeparators = false
+            let layout = UICollectionViewCompositionalLayout.list(using: configuration)
+            return UICollectionView(frame: .zero, collectionViewLayout: layout)
+        }()
+
+        private var spacerHeight: CGFloat = 0
+
+        private weak var footer: FooterView?
+
+        private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
+
+
+        public init(onboardingTitle: String, onboardingItems: [OnboadingItem], footerAttributedString: NSAttributedString?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
             self.onboardingTitle = onboardingTitle
             self.onboardingItems = onboardingItems
-            self.orderedFooterContents = orderedFooterContents
+            self.footerAttributedString = footerAttributedString
             self.buttonTitle = buttonTitle
             self.accentColor = accentColor
             self.onCommit = onCommit
@@ -368,19 +400,6 @@ public class SinglePageOnboardingController: UIViewController {
         required init?(coder: NSCoder) {
             fatalError("init(coder:) has not been implemented")
         }
-
-        let containerCollectionView: UICollectionView = {
-            var configuration = UICollectionLayoutListConfiguration(appearance: .plain)
-            configuration.showsSeparators = false
-            let layout = UICollectionViewCompositionalLayout.list(using: configuration)
-            return UICollectionView(frame: .zero, collectionViewLayout: layout)
-        }()
-
-        private var spacerHeight: CGFloat = 0
-
-        weak var footer: FooterView?
-
-        private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 
         private func setup() {
             layoutMargins.left = 50
@@ -414,6 +433,7 @@ public class SinglePageOnboardingController: UIViewController {
             }
 
             let footerRegistration = UICollectionView.CellRegistration<FooterView, Item> { [weak self] cell, indexPath, item in
+                cell.textView.attributedText = self?.footerAttributedString
                 cell.button.setTitle(self?.buttonTitle, for: .normal)
                 cell.button.backgroundColor = self?.accentColor ?? .systemBlue
                 self?.footer = cell
@@ -483,7 +503,7 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
 
     public let onboardingItems: [OnboadingItem]
 
-    public let orderedFooterContents: [OnboardingFooterContent]?
+    public let footerAttributedString: NSAttributedString?
 
     public let buttonTitle: String
 
@@ -496,7 +516,7 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
         let uiViewController = UIViewControllerType(
             onboardingTitle: self.onboardingTitle,
             onboardingItems: self.onboardingItems,
-            orderedFooterContents: self.orderedFooterContents,
+            footerAttributedString: self.footerAttributedString,
             buttonTitle: self.buttonTitle,
             accentColor: self.accentColor,
             onCommit: self.onCommit
@@ -517,6 +537,22 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
 
     @State static var isPresentated: Bool = true
 
+    static var attributedString: NSAttributedString {
+        let baseFooterText = NSLocalizedString("Please read and agree terms of use and privacy policy.", comment: "")
+        let attributedString = NSMutableAttributedString(string: baseFooterText, attributes: [
+            .foregroundColor: UIColor.label,
+            .font: UIFont.preferredFont(forTextStyle: .callout)
+        ])
+
+        attributedString.addAttribute(.link,
+                                      value: "https://developer.apple.com",
+                                      range: NSString(string: baseFooterText).range(of: NSLocalizedString("terms of use", comment: "")))
+        attributedString.addAttribute(.link,
+                                      value: "https://developer.apple.com",
+                                      range: NSString(string: baseFooterText).range(of: NSLocalizedString("privacy policy", comment: "")))
+        return attributedString
+    }
+
     static var previews: some View {
         Color.gray
             .sheet(isPresented: $isPresentated, content: {
@@ -527,13 +563,7 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
                         OnboadingItem(image: UIImage(systemName: "newspaper")!, imageColor: UIColor.systemRed, title: "New Articles Tab", description: "Discover latest articles."),
                         OnboadingItem(image: UIImage(systemName: "play.rectangle.fill")!.withTintColor(.systemBlue, renderingMode: .alwaysTemplate), imageColor: UIColor.blue, title: "Watch Video News", description: "You can now watch video news in Video News Tab."),
                     ],
-                    orderedFooterContents: [
-                        .text("Please read and agree "),
-                        .link(text: "terms of use", url: URL(string: "https://developer.apple.com/xcode/swiftui")!),
-                        .text(" and "),
-                        .link(text: "privacy policy.", url: URL(string: "https://developer.apple.com/xcode/swiftui")!),
-                        .text("Long Long Long Long Long time ago.")
-                    ],
+                    footerAttributedString: attributedString,
                     buttonTitle: "Next",
                     accentColor: UIColor.purple,
                     onCommit: { }
