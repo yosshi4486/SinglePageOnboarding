@@ -7,7 +7,7 @@
 
 import UIKit
 
-open class SinglePageOnboardingController: UIViewController {
+public class SinglePageOnboardingController: UIViewController {
 
     public let onboardingTitle: String
 
@@ -22,6 +22,8 @@ open class SinglePageOnboardingController: UIViewController {
     public let onCommit: () -> Void
 
     private var _view: _View!
+
+    private var executesInitialAdjustment: Bool = true
 
     public init(onboardingTitle: String, onboardingItems: [OnboadingItem], orderedFooterContents: [OnboardingFooterContent]?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
         precondition(onboardingItems.count <= 3, "The count of onboarding items must be smaller than 3.")
@@ -41,7 +43,7 @@ open class SinglePageOnboardingController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    open override func loadView() {
+    public override func loadView() {
 
         _view = _View(
             onboardingTitle: onboardingTitle,
@@ -55,16 +57,21 @@ open class SinglePageOnboardingController: UIViewController {
         view = _view
     }
 
-    open override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    public override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
 
-        _view.adjustSpace()
+        // Avoid infinite loop.
+        if executesInitialAdjustment {
+            _view.adjustSpacerToFit()
+            executesInitialAdjustment = false
+        }
+
     }
 
-    open override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+    public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
 
-        _view.adjustSpace()
+        _view.adjustSpacerToFit()
     }
 
     /// A internal view that manages onboarding.
@@ -371,8 +378,6 @@ open class SinglePageOnboardingController: UIViewController {
 
         private var spacerHeight: CGFloat = 0
 
-        weak var header: HeaderView?
-
         weak var footer: FooterView?
 
         private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
@@ -406,7 +411,6 @@ open class SinglePageOnboardingController: UIViewController {
 
             let headerRegistration = UICollectionView.CellRegistration<HeaderView, Item> { [weak self] cell, indexPath, item in
                 cell.titleLabel.text = self?.onboardingTitle
-                self?.header = cell
             }
 
             let footerRegistration = UICollectionView.CellRegistration<FooterView, Item> { [weak self] cell, indexPath, item in
@@ -446,7 +450,7 @@ open class SinglePageOnboardingController: UIViewController {
             dataSource.apply(snapshot, animatingDifferences: false)
         }
 
-        func adjustSpace() {
+        func adjustSpacerToFit() {
 
             let footerHeight: CGFloat = footer?.bounds.size.height ?? 0
 
@@ -501,43 +505,48 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
         return uiViewController
     }
 
-    public func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-        // Static
-    }
+    public func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
 
-    public func makeCoordinator() -> Coordinator {
-        return Coordinator()
-    }
+    public func makeCoordinator() -> Coordinator { Coordinator() }
 
-    public class Coordinator: NSObject {
-
-    }
+    public class Coordinator: NSObject {}
 
 }
 
 struct SinglePageOnboardingController_Previews: PreviewProvider {
 
+    @State static var isPresentated: Bool = true
+
     static var previews: some View {
-        SinglePageOnboardingView(
-            onboardingTitle: "What's New",
-            onboardingItems: [
-                OnboadingItem(image: UIImage(systemName: "heart.fill")!, imageColor: UIColor.systemPink, title: "More Personalized", description: "Top Stories picked for you and recommendations from Siri."),
-                OnboadingItem(image: UIImage(systemName: "newspaper")!, imageColor: UIColor.systemRed, title: "New Articles Tab", description: "Discover latest articles."),
-                OnboadingItem(image: UIImage(systemName: "play.rectangle.fill")!.withTintColor(.systemBlue, renderingMode: .alwaysTemplate), imageColor: UIColor.blue, title: "Watch Video News", description: "You can now watch video news in Video News Tab."),
-            ],
-            orderedFooterContents: [
-                .text("Please read and agree "),
-                .link(text: "terms of use", url: URL(string: "https://developer.apple.com/xcode/swiftui")!),
-                .text(" and "),
-                .link(text: "privacy policy.", url: URL(string: "https://developer.apple.com/xcode/swiftui")!),
-                .text("Long Long Long Long Long time ago.")
-            ],
-            buttonTitle: "Next",
-            accentColor: UIColor.purple,
-            onCommit: { }
-        )
-        .ignoresSafeArea()
-        .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
+        Color.gray
+            .sheet(isPresented: $isPresentated, content: {
+                SinglePageOnboardingView(
+                    onboardingTitle: "What's New",
+                    onboardingItems: [
+                        OnboadingItem(image: UIImage(systemName: "heart.fill")!, imageColor: UIColor.systemPink, title: "More Personalized", description: "Top Stories picked for you and recommendations from Siri."),
+                        OnboadingItem(image: UIImage(systemName: "newspaper")!, imageColor: UIColor.systemRed, title: "New Articles Tab", description: "Discover latest articles."),
+                        OnboadingItem(image: UIImage(systemName: "play.rectangle.fill")!.withTintColor(.systemBlue, renderingMode: .alwaysTemplate), imageColor: UIColor.blue, title: "Watch Video News", description: "You can now watch video news in Video News Tab."),
+                    ],
+                    orderedFooterContents: [
+                        .text("Please read and agree "),
+                        .link(text: "terms of use", url: URL(string: "https://developer.apple.com/xcode/swiftui")!),
+                        .text(" and "),
+                        .link(text: "privacy policy.", url: URL(string: "https://developer.apple.com/xcode/swiftui")!),
+                        .text("Long Long Long Long Long time ago.")
+                    ],
+                    buttonTitle: "Next",
+                    accentColor: UIColor.purple,
+                    onCommit: { }
+                )
+                /*
+                 Please try to check differences when accessibility settings are changed by users.
+
+                 Commend out here.
+                 */
+//                .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
+
+            })
+            .ignoresSafeArea()
     }
 
 }
