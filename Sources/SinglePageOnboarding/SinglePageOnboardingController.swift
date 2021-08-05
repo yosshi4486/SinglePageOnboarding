@@ -61,7 +61,7 @@ public class SinglePageOnboardingController: UIViewController {
         super.traitCollectionDidChange(previousTraitCollection)
 
         if executesInitialAdjustment || (traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory){
-            _view.useAppropriateFooterRespectingActualContentSize()
+            _view.useAppropriateFooterRespectingForActualContentSize()
             executesInitialAdjustment = false
         }
 
@@ -472,10 +472,10 @@ public class SinglePageOnboardingController: UIViewController {
         override func layoutSubviews() {
             super.layoutSubviews()
 
-            useAppropriateFooterRespectingActualContentSize()
+            useAppropriateFooterRespectingForActualContentSize()
         }
 
-        func useAppropriateFooterRespectingActualContentSize() {
+        func useAppropriateFooterRespectingForActualContentSize() {
             let footerHeight = footerView.bounds.size.height
             var actualContentHeight = containerCollectionView.contentSize.height
             var currentSnapshot = dataSource.snapshot(for: .footer)
