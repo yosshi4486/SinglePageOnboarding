@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "SinglePageOnboarding",
+        "repositoryURL": "https://github.com/yosshi4486/SinglePageOnboarding",
+        "state": {
+          "branch": null,
+          "revision": "1e93587b462643920261b9e0a479d88b70fcddf6",
+          "version": "1.0.4"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
