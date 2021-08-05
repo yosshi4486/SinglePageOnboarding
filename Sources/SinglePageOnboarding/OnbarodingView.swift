@@ -33,7 +33,19 @@ class OnbarodingView: UIView {
 
     var featureItems: [OnboadingFeatureItem]
 
-    let action: OnboardingAction
+    var action: OnboardingAction? {
+        didSet {
+            footerView.button.setTitle(action?.title, for: .normal)
+            footerView.button.backgroundColor = tintColor
+            footerView.button.addAction(UIAction(handler: { [weak self] _ in
+                guard let onboardingAction = self?.action else {
+                    return
+                }
+
+                onboardingAction.handler(onboardingAction)
+            }), for: .touchUpInside)
+        }
+    }
 
     var footerAttributedString: NSAttributedString? {
         didSet {
@@ -58,10 +70,9 @@ class OnbarodingView: UIView {
 
     private let footerView: FooterView = FooterView(frame: .zero)
 
-    public init(title: String?, featureItems: [OnboadingFeatureItem], action: OnboardingAction) {
+    public init(title: String?, featureItems: [OnboadingFeatureItem]) {
         self.title = title
         self.featureItems = featureItems
-        self.action = action
 
         super.init(frame: .zero)
 
@@ -73,12 +84,22 @@ class OnbarodingView: UIView {
     }
 
     private func setup() {
+        setupConstraints()
+        setupDiffableDataSource()
+        applyInitialData()
+    }
+
+    private func setupConstraints() {
         layoutMargins.left = 50
         layoutMargins.right = 50
+
         containerCollectionView.preservesSuperviewLayoutMargins = true
         footerView.preservesSuperviewLayoutMargins = true
 
         addSubview(containerCollectionView)
+        addSubview(footerView)
+
+        footerView.translatesAutoresizingMaskIntoConstraints = false
         containerCollectionView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
@@ -87,6 +108,16 @@ class OnbarodingView: UIView {
             containerCollectionView.topAnchor.constraint(equalTo: topAnchor),
             containerCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
+
+        NSLayoutConstraint.activate([
+            footerView.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: 0),
+            footerView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+            footerView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
+            footerView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
+    }
+
+    private func setupDiffableDataSource() {
 
         let cellRegistration = UICollectionView.CellRegistration<FeatureCell, Item> { [weak self] cell, indexPath, item in
             if case .onboarding(let onboardingItem) = item {
@@ -107,7 +138,7 @@ class OnbarodingView: UIView {
         let footerRegistration = UICollectionView.CellRegistration<FooterCell, Item> { [weak self] cell, indexPath, item in
             cell.textView.attributedText = self?.footerAttributedString
             cell.textView.delegate = self?.footerTextViewDelegate
-            cell.button.setTitle(self?.action.title, for: .normal)
+            cell.button.setTitle(self?.action?.title, for: .normal)
             cell.button.backgroundColor = self?.tintColor
             cell.button.addAction(UIAction(handler: { _ in
                 guard let onboardingAction = self?.action else {
@@ -131,31 +162,10 @@ class OnbarodingView: UIView {
         })
 
         containerCollectionView.dataSource = dataSource
-        containerCollectionView.translatesAutoresizingMaskIntoConstraints = false
         containerCollectionView.allowsSelection = false
+    }
 
-        addSubview(footerView)
-        footerView.translatesAutoresizingMaskIntoConstraints = false
-
-        NSLayoutConstraint.activate([
-            footerView.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: 0),
-            footerView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-            footerView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
-            footerView.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
-
-        footerView.textView.attributedText = footerAttributedString
-        footerView.textView.delegate = footerTextViewDelegate
-        footerView.button.setTitle(action.title, for: .normal)
-        footerView.button.backgroundColor = tintColor
-        footerView.button.addAction(UIAction(handler: { [weak self] _ in
-            guard let onboardingAction = self?.action else {
-                return
-            }
-
-            onboardingAction.handler(onboardingAction)
-        }), for: .touchUpInside)
-
+    private func applyInitialData() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         snapshot.appendSections(Section.allCases)
         snapshot.appendItems([.header], toSection: .header)

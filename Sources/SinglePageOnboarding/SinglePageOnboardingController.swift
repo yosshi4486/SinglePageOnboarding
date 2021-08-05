@@ -66,8 +66,14 @@ public class SinglePageOnboardingController: UIViewController {
     /// The action that is used in bottom button.
     ///
     /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
-    public var action: OnboardingAction {
-        return onboardingView.action
+    public var action: OnboardingAction? {
+        get {
+            return onboardingView.action
+        }
+
+        set {
+            onboardingView.action = newValue
+        }
     }
 
     /// The attributed string that will be set to footer text view. The default value is nil.
@@ -108,13 +114,12 @@ public class SinglePageOnboardingController: UIViewController {
     /// The internal view that is loaded in `loadView()`.
     private var onboardingView: OnbarodingView!
 
-    public init(title: String?, featureItems: [OnboadingFeatureItem], action: OnboardingAction) {
+    public init(title: String?, featureItems: [OnboadingFeatureItem]) {
         precondition(featureItems.count <= 3, "The count of onboarding items must be smaller than 3.")
 
         self.onboardingView = OnbarodingView(
             title: title,
-            featureItems: featureItems,
-            action: action
+            featureItems: featureItems
         )
 
         super.init(nibName: nil, bundle: nil)
@@ -148,7 +153,7 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
 
     public let featureItems: [OnboadingFeatureItem]
 
-    public let action: OnboardingAction
+    public let action: OnboardingAction?
 
     public let footerAttributedString: NSAttributedString?
 
@@ -160,10 +165,8 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
 
         let uiViewController = UIViewControllerType(
             title: self.title,
-            featureItems: self.featureItems,
-            action: self.action
+            featureItems: self.featureItems
         )
-        uiViewController.tintColor = tintColor ?? .systemBlue
 
         return uiViewController
     }
@@ -172,6 +175,7 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
         uiViewController.footerAttributedString = self.footerAttributedString
         uiViewController.tintColor = self.tintColor ?? .systemBlue
         uiViewController.footerTextViewDelegate = self.footerTextViewDelegate
+        uiViewController.action = self.action
     }
 
     public func makeCoordinator() -> Coordinator { Coordinator() }
