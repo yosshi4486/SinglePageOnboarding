@@ -2,6 +2,10 @@
 
 This package provides single page onboarding view controller that it is easy to provide onboarding experience.
 
+<p align="center">
+  <img width="400" height="757" src="./Resources/ScreenShot.png">
+</p>
+
 ## Usage
 
 Use *Single Page Onboarding View Controller* to configure single page onboarding content. After configuring the single page onboarding controller with the feature items and action, present it using the `present(_:animated:completion:)` method. UIKit displays onboarding content modaly over your app's content.
