@@ -23,10 +23,10 @@ let onboarding = SinglePageOnboardingController(
 )
 
 onboarding.action = OnboardingAction(
-        title: "Agree and Continue",
-        handler: { action in
-            onboarding.dismiss(animated: true, completion: nil)
-        }
+    title: "Agree and Continue",
+    handler: { action in
+        onboarding.dismiss(animated: true, completion: nil)
+    }
 )
 
 self.present(onboarding, animated: true, completion: nil)
