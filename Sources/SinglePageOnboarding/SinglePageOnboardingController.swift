@@ -9,6 +9,12 @@ import UIKit
 
 /// A view controller that presents onboarding content in single page.
 ///
+/// Use this class to configure single page onboarding content. After configuring the single page onboarding controller with the feature items and action,
+/// present it using the `present(_:animated:completion:)` method. UIKit displays onboarding content modaly over your app's content.
+///
+///     let onboarding = SinglePageOnboardingController(title: "Welcome to My App!", featureItems: [OnboadingFeatureItem(title: "More Personalized", description: "Top Stories picked for you and recommendations from Siri.", image: UIImage(systemName: "heart.fill")!)], action: OnboardingAction(title: "Agree and Continue", handler: { _ in }))
+///     self.present(onboarding, animated: true, completion: nil)
+///
 /// # Key Concepts of This View Controller
 ///
 /// This view controller follows several key concepts as followings:
@@ -36,57 +42,80 @@ public class SinglePageOnboardingController: UIViewController {
     /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
     public override var title: String? {
         get {
-            return onboardingTitle
+            return singlePageOnboardingUIKitView.title
         }
 
         set {
-            onboardingTitle = newValue
             singlePageOnboardingUIKitView.title = newValue
         }
     }
-
-    private var onboardingTitle: String?
 
     /// The items which convery about your app key features to the user.
     ///
     /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
     public var featureItems: [OnboadingFeatureItem] {
-        didSet {
-            singlePageOnboardingUIKitView.featureItems = featureItems
+        get {
+            return singlePageOnboardingUIKitView.featureItems
+        }
+
+        set {
+            singlePageOnboardingUIKitView.featureItems = newValue
         }
     }
 
     /// The action that is used in bottom button.
     ///
     /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
-    public let action: OnboardingAction
+    public var action: OnboardingAction {
+        return singlePageOnboardingUIKitView.action
+    }
 
+    /// The attributed string that will be set to footer text view. The default value is nil.
     public var footerAttributedString: NSAttributedString? {
-        didSet {
-            singlePageOnboardingUIKitView.footerAttributedString = footerAttributedString
+        get {
+            return singlePageOnboardingUIKitView.footerAttributedString
+        }
+
+        set {
+            singlePageOnboardingUIKitView.footerAttributedString = newValue
         }
     }
 
+    /// The text view delegate that will be set to footer text view. The default value is nil.
     public weak var footerTextViewDelegate: UITextViewDelegate? {
-        didSet {
-            singlePageOnboardingUIKitView.footerTextViewDelegate = footerTextViewDelegate
+        get {
+            return singlePageOnboardingUIKitView.footerTextViewDelegate
+        }
+
+        set {
+            singlePageOnboardingUIKitView.footerTextViewDelegate = newValue
         }
     }
 
+    /// The tintColor that affects all descendant view.
+    ///
+    /// If you provide `imageColor` in featureItems, the tintColor is ignored in feature item cell.
     public var tintColor: UIColor! {
-        didSet {
-            singlePageOnboardingUIKitView.tintColor = tintColor ?? .systemBlue
+        get {
+            return singlePageOnboardingUIKitView.tintColor
+        }
+
+        set {
+            singlePageOnboardingUIKitView.tintColor = newValue
         }
     }
 
+    /// The internal view that is loaded in `loadView()`.
     private var singlePageOnboardingUIKitView: SinglePageOnbarodingUIKitView!
 
     public init(title: String?, featureItems: [OnboadingFeatureItem], action: OnboardingAction) {
         precondition(featureItems.count <= 3, "The count of onboarding items must be smaller than 3.")
 
-        self.onboardingTitle = title
-        self.featureItems = featureItems
-        self.action = action
+        self.singlePageOnboardingUIKitView = SinglePageOnbarodingUIKitView(
+            title: title,
+            featureItems: featureItems,
+            action: action
+        )
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -96,13 +125,6 @@ public class SinglePageOnboardingController: UIViewController {
     }
 
     public override func loadView() {
-
-        singlePageOnboardingUIKitView = SinglePageOnbarodingUIKitView(
-            title: title,
-            featureItems: featureItems,
-            action: action
-        )
-
         view = singlePageOnboardingUIKitView
     }
 
@@ -181,9 +203,9 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
                 SinglePageOnboardingView(
                     title: "What's New",
                     featureItems: [
-                        OnboadingFeatureItem(image: UIImage(systemName: "heart.fill")!, imageColor: UIColor.systemPink, title: "More Personalized", description: "Top Stories picked for you and recommendations from Siri."),
-                        OnboadingFeatureItem(image: UIImage(systemName: "newspaper")!, imageColor: UIColor.systemRed, title: "New Articles Tab", description: "Discover latest articles."),
-                        OnboadingFeatureItem(image: UIImage(systemName: "play.rectangle.fill")!.withTintColor(.systemBlue, renderingMode: .alwaysTemplate), imageColor: UIColor.blue, title: "Watch Video News", description: "You can now watch video news in Video News Tab."),
+                        OnboadingFeatureItem(title: "More Personalized", description: "Top Stories picked for you and recommendations from Siri.", image: UIImage(systemName: "heart.fill")!, imageColor: UIColor.systemPink),
+                        OnboadingFeatureItem(title: "New Articles Tab", description: "Discover latest articles.", image: UIImage(systemName: "newspaper")!, imageColor: UIColor.systemRed),
+                        OnboadingFeatureItem(title: "Watch Video News", description: "You can now watch video news in Video News Tab.", image: UIImage(systemName: "play.rectangle.fill")!.withTintColor(.systemBlue, renderingMode: .alwaysTemplate), imageColor: UIColor.blue),
                     ],
                     action: OnboardingAction(title: "Next", handler: { _ in }),
                     footerAttributedString: attributedString

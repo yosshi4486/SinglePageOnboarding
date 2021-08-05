@@ -17,16 +17,25 @@ public struct OnboadingFeatureItem {
     public let imageColor: UIColor?
 
     /// The size of the image.
-    public let imageSize: CGSize = .init(width: 50, height: 50)
+    public let imageSize: CGSize
 
     /// The trailing space of the image.
-    public let spacingBetweenImageAndContentView: CGFloat = 15
+    public let spacingBetweenImageAndContentView: CGFloat
 
     /// The title of the onbarding information.
     public let title: String
 
     /// The description of the onboarding information
     public let description: String
+
+    public init(title: String, description: String, image: UIImage, imageColor: UIColor? = nil, imageSize: CGSize = .init(width: 50, height: 50), spacingBetweenImageAndContentView: CGFloat = 15) {
+        self.title = title
+        self.description = description
+        self.image = image
+        self.imageSize = imageSize
+        self.imageColor = imageColor
+        self.spacingBetweenImageAndContentView = spacingBetweenImageAndContentView
+    }
 
 }
 
