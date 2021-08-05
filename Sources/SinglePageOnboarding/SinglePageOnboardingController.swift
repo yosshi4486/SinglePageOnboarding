@@ -154,6 +154,8 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
 
     public weak var footerTextViewDelegate: UITextViewDelegate?
 
+    public var tintColor: UIColor?
+
     public func makeUIViewController(context: Context) -> UIViewControllerType {
 
         let uiViewController = UIViewControllerType(
@@ -161,13 +163,14 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
             featureItems: self.featureItems,
             action: self.action
         )
+        uiViewController.tintColor = tintColor ?? .systemBlue
 
         return uiViewController
     }
 
     public func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
         uiViewController.footerAttributedString = self.footerAttributedString
-        uiViewController.tintColor = UIColor(Color.accentColor)
+        uiViewController.tintColor = self.tintColor ?? .systemBlue
         uiViewController.footerTextViewDelegate = self.footerTextViewDelegate
     }
 
@@ -208,16 +211,15 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
                         OnboadingFeatureItem(title: "Watch Video News", description: "You can now watch video news in Video News Tab.", image: UIImage(systemName: "play.rectangle.fill")!.withTintColor(.systemBlue, renderingMode: .alwaysTemplate), imageColor: UIColor.blue),
                     ],
                     action: OnboardingAction(title: "Next", handler: { _ in }),
-                    footerAttributedString: attributedString
+                    footerAttributedString: attributedString,
+                    tintColor: .purple
                 )
                 /*
                  Please try to check differences when accessibility settings are changed by users.
 
                  Commend out here.
                  */
-                .environment(\.sizeCategory, .accessibilityExtraExtraLarge)
-                .accentColor(Color.purple)
-
+//                .environment(\.sizeCategory, .accessibilityExtraExtraLarge)
             })
             .ignoresSafeArea()
             .previewDevice(PreviewDevice(rawValue: "iPhone 12 Pro Max"))
