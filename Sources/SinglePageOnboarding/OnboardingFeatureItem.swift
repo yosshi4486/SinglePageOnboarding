@@ -8,7 +8,7 @@
 import UIKit
 
 /// A item that represents an onboarding information about your app.
-public struct OnboadingItem {
+public struct OnboadingFeatureItem {
 
     /// The image that is positioned leading of the cell.
     public let image: UIImage
@@ -39,9 +39,9 @@ extension CGSize: Hashable {
 
 }
 
-extension OnboadingItem: Hashable, Equatable { }
+extension OnboadingFeatureItem: Hashable, Equatable { }
 
-extension OnboadingItem: Identifiable {
+extension OnboadingFeatureItem: Identifiable {
 
     public var id: Int { hashValue }
     

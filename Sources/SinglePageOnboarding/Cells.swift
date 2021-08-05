@@ -78,7 +78,7 @@ final class HeaderCell: UICollectionViewListCell {
     }
 }
 
-final class OnboardingCell: UICollectionViewListCell {
+final class FeatureCell: UICollectionViewListCell {
 
     let containerStack: UIStackView = {
         let stackView = UIStackView()

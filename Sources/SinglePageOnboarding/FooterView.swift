@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class FooterView: UIView, UITextViewDelegate {
+final class FooterView: UIView {
 
     var textView: UITextView = {
         let view = UITextView()
@@ -38,8 +38,6 @@ final class FooterView: UIView, UITextViewDelegate {
     }
 
     private func setup() {
-        textView.delegate = self
-
         addSubview(textView)
         addSubview(button)
         textView.translatesAutoresizingMaskIntoConstraints = false
@@ -58,14 +56,6 @@ final class FooterView: UIView, UITextViewDelegate {
             button.leadingAnchor.constraint(equalTo: textView.leadingAnchor),
             button.trailingAnchor.constraint(equalTo: textView.trailingAnchor)
         ])
-    }
-
-    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
-        if UIApplication.shared.canOpenURL(URL) {
-            UIApplication.shared.open(URL)
-            return false
-        }
-        return true
     }
 
 }

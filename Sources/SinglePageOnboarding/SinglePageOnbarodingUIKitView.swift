@@ -17,29 +17,35 @@ import UIKit
 ///
 class SinglePageOnbarodingUIKitView: UIView {
 
-    private enum Section: Int, CaseIterable {
+    enum Section: Int, CaseIterable {
         case header
         case main
         case footer
     }
 
-    private enum Item: Hashable {
+    enum Item: Hashable {
         case header
         case footer
-        case onboarding(OnboadingItem)
+        case onboarding(OnboadingFeatureItem)
     }
 
-    public let onboardingTitle: String
+    let onboardingTitle: String
 
-    public let onboardingItems: [OnboadingItem]
+    let onboardingFeatureItems: [OnboadingFeatureItem]
 
-    public let footerAttributedString: NSAttributedString?
+    let onboardingAction: OnboardingAction
 
-    public let buttonTitle: String
+    var footerAttributedString: NSAttributedString? {
+        didSet {
+            footerView.textView.attributedText = footerAttributedString
+        }
+    }
 
-    public let accentColor: UIColor?
-
-    public let onCommit: () -> Void
+    weak var footerTextViewDelegate: UITextViewDelegate? {
+        didSet {
+            footerView.textView.delegate = footerTextViewDelegate
+        }
+    }
 
     private let containerCollectionView: UICollectionView = {
         var configuration = UICollectionLayoutListConfiguration(appearance: .plain)
@@ -52,13 +58,10 @@ class SinglePageOnbarodingUIKitView: UIView {
 
     private let footerView: FooterView = FooterView(frame: .zero)
 
-    public init(onboardingTitle: String, onboardingItems: [OnboadingItem], footerAttributedString: NSAttributedString?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
+    public init(onboardingTitle: String, onboardingFeatureItems: [OnboadingFeatureItem], onboardingAction: OnboardingAction) {
         self.onboardingTitle = onboardingTitle
-        self.onboardingItems = onboardingItems
-        self.footerAttributedString = footerAttributedString
-        self.buttonTitle = buttonTitle
-        self.accentColor = accentColor
-        self.onCommit = onCommit
+        self.onboardingFeatureItems = onboardingFeatureItems
+        self.onboardingAction = onboardingAction
 
         super.init(frame: .zero)
 
@@ -85,12 +88,12 @@ class SinglePageOnbarodingUIKitView: UIView {
             containerCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
 
-        let cellRegistration = UICollectionView.CellRegistration<OnboardingCell, Item> { [weak self] cell, indexPath, item in
+        let cellRegistration = UICollectionView.CellRegistration<FeatureCell, Item> { [weak self] cell, indexPath, item in
             if case .onboarding(let onboardingItem) = item {
                 cell.titleLabel.text = onboardingItem.title
                 cell.descriptionLabel.text = onboardingItem.description
                 cell.imageView.image = onboardingItem.image
-                cell.imageView.tintColor = onboardingItem.imageColor ?? self?.accentColor
+                cell.imageView.tintColor = onboardingItem.imageColor ?? self?.tintColor
                 cell.imageSize = onboardingItem.imageSize
                 cell.spaceBetweenItem = 50
                 cell.containerStack.spacing = onboardingItem.spacingBetweenImageAndContentView
@@ -103,10 +106,15 @@ class SinglePageOnbarodingUIKitView: UIView {
 
         let footerRegistration = UICollectionView.CellRegistration<FooterCell, Item> { [weak self] cell, indexPath, item in
             cell.textView.attributedText = self?.footerAttributedString
-            cell.button.setTitle(self?.buttonTitle, for: .normal)
-            cell.button.backgroundColor = self?.accentColor ?? .systemBlue
+            cell.textView.delegate = self?.footerTextViewDelegate
+            cell.button.setTitle(self?.onboardingAction.title, for: .normal)
+            cell.button.backgroundColor = self?.tintColor
             cell.button.addAction(UIAction(handler: { _ in
-                self?.onCommit()
+                guard let onboardingAction = self?.onboardingAction else {
+                    return
+                }
+
+                onboardingAction.handler(onboardingAction)
             }), for: .touchUpInside)
         }
 
@@ -137,16 +145,21 @@ class SinglePageOnbarodingUIKitView: UIView {
         ])
 
         footerView.textView.attributedText = footerAttributedString
-        footerView.button.setTitle(buttonTitle, for: .normal)
-        footerView.button.backgroundColor = accentColor ?? .systemBlue
+        footerView.textView.delegate = footerTextViewDelegate
+        footerView.button.setTitle(onboardingAction.title, for: .normal)
+        footerView.button.backgroundColor = tintColor
         footerView.button.addAction(UIAction(handler: { [weak self] _ in
-            self?.onCommit()
+            guard let onboardingAction = self?.onboardingAction else {
+                return
+            }
+
+            onboardingAction.handler(onboardingAction)
         }), for: .touchUpInside)
 
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         snapshot.appendSections(Section.allCases)
         snapshot.appendItems([.header], toSection: .header)
-        snapshot.appendItems(onboardingItems.map({ Item.onboarding($0) }), toSection: .main)
+        snapshot.appendItems(onboardingFeatureItems.map({ Item.onboarding($0) }), toSection: .main)
         snapshot.appendItems([.footer], toSection: .footer)
         dataSource.apply(snapshot, animatingDifferences: false)
     }
