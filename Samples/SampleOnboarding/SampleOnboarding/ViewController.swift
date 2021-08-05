@@ -40,13 +40,14 @@ class ViewController: UIViewController {
                     image: UIImage(systemName: "play.rectangle.fill")!,
                     imageColor: UIColor.blue
                 ),
-            ],
-            action: OnboardingAction(
-                title: "Agree and Continue",
-                handler: { action in
-                    // Do something, such as storing flag in `UserDefaults`.
-                }
-            )
+            ]
+        )
+        onboarding.action = OnboardingAction(
+            title: "Agree and Continue",
+            handler: { action in
+                UserDefaults.standard.set(true, forKey: "agreeTermsOfUsesAndPrivacyPolicy")
+                onboarding.dismiss(animated: true, completion: nil)
+            }
         )
 
         let baseFooterText = NSLocalizedString("Please read and agree terms of use and privacy policy.", comment: "")
