@@ -42,8 +42,8 @@ I'm looking forward for your issues or pull requests😊
 
 Specifically...
 
-## Word corrections
+### Word corrections
 I'm not native english language speaker, some sentences may have miss.
 
-## Better implementation
+### Better implementation
 Since the internal implementations of this package is quite tricky, I want to refine them.
