@@ -141,7 +141,7 @@ class OnbarodingView: UIView {
             footerView.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: 0),
             footerView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
             footerView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
-            footerView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor)
+            footerView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
 
         footerView.textView.attributedText = footerAttributedString

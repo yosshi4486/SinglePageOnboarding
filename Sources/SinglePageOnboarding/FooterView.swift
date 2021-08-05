@@ -24,7 +24,16 @@ final class FooterView: UIView {
         aButton.clipsToBounds = true
         aButton.layer.cornerRadius = 10
         aButton.titleLabel?.font = .preferredFont(forTextStyle: .body).bold()
+
+        /*
+         Applying dynamic type to UIButton is difficult, so using `adjustsFontSizeToFitWidth` to scale down
+         font size now.
+
+         If you catch up any solution, please make issues or pull requests.
+         */
+        aButton.titleLabel?.adjustsFontSizeToFitWidth = true
         aButton.titleLabel?.adjustsFontForContentSizeCategory = true
+
         return aButton
     }()
 
@@ -52,10 +61,16 @@ final class FooterView: UIView {
         NSLayoutConstraint.activate([
             button.heightAnchor.constraint(greaterThanOrEqualToConstant: 50),
             button.topAnchor.constraint(equalTo: textView.bottomAnchor, constant: layoutMargins.top),
-            button.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -15),
+            button.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -60),
             button.leadingAnchor.constraint(equalTo: textView.leadingAnchor),
             button.trailingAnchor.constraint(equalTo: textView.trailingAnchor)
         ])
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+
+        button.sizeToFit()
     }
 
 }

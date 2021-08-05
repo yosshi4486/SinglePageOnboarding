@@ -31,12 +31,16 @@ final class HeaderCell: UICollectionViewListCell {
         addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
+        let bottomConstraint = titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -60)
+        bottomConstraint.priority = .defaultHigh
+
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 60),
-            titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -60),
+            bottomConstraint,
             titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor),
             titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
+
     }
 
 }
@@ -166,6 +170,8 @@ final class FeatureCell: UICollectionViewListCell {
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
 
         bottomConstraint = containerStack.bottomAnchor.constraint(equalTo: bottomAnchor)
+        bottomConstraint.priority = .defaultHigh
+
         NSLayoutConstraint.activate([
             containerStack.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
             containerStack.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
