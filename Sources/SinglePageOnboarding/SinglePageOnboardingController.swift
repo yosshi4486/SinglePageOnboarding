@@ -23,8 +23,6 @@ public class SinglePageOnboardingController: UIViewController {
 
     private var _view: _View!
 
-    private var executesInitialAdjustment: Bool = true
-
     public init(onboardingTitle: String, onboardingItems: [OnboadingItem], footerAttributedString: NSAttributedString?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
         precondition(onboardingItems.count <= 3, "The count of onboarding items must be smaller than 3.")
 
@@ -60,11 +58,9 @@ public class SinglePageOnboardingController: UIViewController {
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
 
-        if executesInitialAdjustment || (traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory){
+        if traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory {
             _view.useAppropriateFooterRespectingForActualContentSize()
-            executesInitialAdjustment = false
         }
-
     }
 
     /// A internal view that manages onboarding.
@@ -89,7 +85,7 @@ public class SinglePageOnboardingController: UIViewController {
             case onboarding(OnboadingItem)
         }
 
-        final class HeaderView: UICollectionViewListCell {
+        final class HeaderCell: UICollectionViewListCell {
 
             let titleLabel: UILabel = {
                 let label = UILabel()
@@ -131,6 +127,7 @@ public class SinglePageOnboardingController: UIViewController {
                 view.isSelectable = true
                 view.isUserInteractionEnabled = true
                 view.isScrollEnabled = false
+                view.adjustsFontForContentSizeCategory = true
                 return view
             }()
 
@@ -160,8 +157,8 @@ public class SinglePageOnboardingController: UIViewController {
 
                 NSLayoutConstraint.activate([
                     textView.topAnchor.constraint(equalTo: topAnchor),
-                    textView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-                    textView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
+                    textView.leadingAnchor.constraint(equalTo: leadingAnchor),
+                    textView.trailingAnchor.constraint(equalTo: trailingAnchor)
                 ])
 
                 NSLayoutConstraint.activate([
@@ -326,14 +323,6 @@ public class SinglePageOnboardingController: UIViewController {
                     descriptionLabel.bottomAnchor.constraint(equalTo: trailingContentView.bottomAnchor)
                 ])
 
-                if traitCollection.preferredContentSizeCategory >= .accessibilityMedium {
-                    containerStack.axis = .vertical
-                    containerStack.alignment = .leading
-                } else {
-                    containerStack.axis = .horizontal
-                    containerStack.alignment = .center
-                }
-
             }
 
             override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -421,7 +410,7 @@ public class SinglePageOnboardingController: UIViewController {
                 }
             }
 
-            let headerRegistration = UICollectionView.CellRegistration<HeaderView, Item> { [weak self] cell, indexPath, item in
+            let headerRegistration = UICollectionView.CellRegistration<HeaderCell, Item> { [weak self] cell, indexPath, item in
                 cell.titleLabel.text = self?.onboardingTitle
             }
 
@@ -472,6 +461,10 @@ public class SinglePageOnboardingController: UIViewController {
         override func layoutSubviews() {
             super.layoutSubviews()
 
+            /*
+             This call may cause recursive call of `layoutSubviews()`, but only once.
+             Once the appropriate footer is determined, the method will not make any changes, so the recursive call will stop.
+             */
             useAppropriateFooterRespectingForActualContentSize()
         }
 
@@ -480,8 +473,8 @@ public class SinglePageOnboardingController: UIViewController {
             var actualContentHeight = containerCollectionView.contentSize.height
             var currentSnapshot = dataSource.snapshot(for: .footer)
 
-            if currentSnapshot.visibleItems.count > 0 {
-                actualContentHeight -= footerHeight
+            if currentSnapshot.visibleItems.count == 0 {
+                actualContentHeight += footerHeight
             }
 
             if actualContentHeight >= bounds.size.height {
@@ -503,7 +496,11 @@ public class SinglePageOnboardingController: UIViewController {
                 containerCollectionView.isScrollEnabled = false
             }
 
-            dataSource.apply(currentSnapshot, to: .footer)
+            // Apply changes only if some differences are recognized.
+            if currentSnapshot.visibleItems != dataSource.snapshot(for: .footer).visibleItems {
+                dataSource.apply(currentSnapshot, to: .footer, animatingDifferences: false)
+            }
+
         }
 
     }
@@ -591,10 +588,13 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
 
                  Commend out here.
                  */
-                .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
+                .environment(\.sizeCategory, .accessibilityMedium)
 
             })
             .ignoresSafeArea()
+            .previewDevice(PreviewDevice(rawValue: "iPhone 12 Pro Max"))
+            .previewDisplayName("iPhone 12 Pro Max")
+
     }
 
 }
