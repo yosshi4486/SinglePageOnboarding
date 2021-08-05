@@ -57,21 +57,14 @@ public class SinglePageOnboardingController: UIViewController {
         view = _view
     }
 
-    public override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-
-        // Avoid infinite loop.
-        if executesInitialAdjustment {
-            _view.adjustSpacerToFit()
-            executesInitialAdjustment = false
-        }
-
-    }
-
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
 
-        _view.adjustSpacerToFit()
+        if executesInitialAdjustment || (traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory){
+            _view.useAppropriateFooterRespectingActualContentSize()
+            executesInitialAdjustment = false
+        }
+
     }
 
     /// A internal view that manages onboarding.
@@ -87,14 +80,12 @@ public class SinglePageOnboardingController: UIViewController {
         private enum Section: Int, CaseIterable {
             case header
             case main
-            case spacer
             case footer
         }
 
         private enum Item: Hashable {
             case header
             case footer
-            case spacer
             case onboarding(OnboadingItem)
         }
 
@@ -132,9 +123,9 @@ public class SinglePageOnboardingController: UIViewController {
 
         }
 
-        final class FooterView: UICollectionViewListCell {
+        final class FooterView: UIView {
 
-            let textView: UITextView = {
+            var textView: UITextView = {
                 let view = UITextView()
                 view.isEditable = false
                 view.isSelectable = true
@@ -143,7 +134,7 @@ public class SinglePageOnboardingController: UIViewController {
                 return view
             }()
 
-            let button: UIButton = {
+            var button: UIButton = {
                 let aButton = UIButton()
                 aButton.clipsToBounds = true
                 aButton.layer.cornerRadius = 10
@@ -184,13 +175,19 @@ public class SinglePageOnboardingController: UIViewController {
             }
         }
 
-        final class Spacer: UICollectionViewListCell {
+        @dynamicMemberLookup final class FooterCell: UICollectionViewListCell {
 
-            var heightConstraint: NSLayoutConstraint!
+            var footerView: FooterView = .init()
 
-            let label: UILabel = {
-                return UILabel()
-            }()
+            public subscript<U>(dynamicMember keyPath: ReferenceWritableKeyPath<FooterView, U>) -> U {
+                get {
+                    footerView[keyPath:keyPath]
+                }
+
+                set {
+                    footerView[keyPath:keyPath] = newValue
+                }
+            }
 
             override init(frame: CGRect) {
                 super.init(frame: frame)
@@ -202,21 +199,19 @@ public class SinglePageOnboardingController: UIViewController {
             }
 
             private func setup() {
-                addSubview(label)
-                label.translatesAutoresizingMaskIntoConstraints = false
-
-                heightConstraint = label.heightAnchor.constraint(equalToConstant: 0)
+                addSubview(footerView)
+                footerView.translatesAutoresizingMaskIntoConstraints = false
 
                 NSLayoutConstraint.activate([
-                    heightConstraint,
-                    label.topAnchor.constraint(equalTo: topAnchor),
-                    label.bottomAnchor.constraint(equalTo: bottomAnchor),
-                    label.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-                    label.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
+                    footerView.topAnchor.constraint(equalTo: topAnchor),
+                    footerView.bottomAnchor.constraint(equalTo: bottomAnchor),
+                    footerView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+                    footerView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
                 ])
-            }
 
+            }
         }
+
 
         final class Cell: UICollectionViewListCell {
 
@@ -377,12 +372,9 @@ public class SinglePageOnboardingController: UIViewController {
             return UICollectionView(frame: .zero, collectionViewLayout: layout)
         }()
 
-        private var spacerHeight: CGFloat = 0
-
-        private weak var footer: FooterView?
-
         private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 
+        private let footerView: FooterView = FooterView(frame: .zero)
 
         public init(onboardingTitle: String, onboardingItems: [OnboadingItem], footerAttributedString: NSAttributedString?, buttonTitle: String, accentColor: UIColor?, onCommit: @escaping () -> Void) {
             self.onboardingTitle = onboardingTitle
@@ -405,6 +397,7 @@ public class SinglePageOnboardingController: UIViewController {
             layoutMargins.left = 50
             layoutMargins.right = 50
             containerCollectionView.preservesSuperviewLayoutMargins = true
+            footerView.preservesSuperviewLayoutMargins = true
 
             addSubview(containerCollectionView)
             containerCollectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -432,15 +425,10 @@ public class SinglePageOnboardingController: UIViewController {
                 cell.titleLabel.text = self?.onboardingTitle
             }
 
-            let footerRegistration = UICollectionView.CellRegistration<FooterView, Item> { [weak self] cell, indexPath, item in
+            let footerRegistration = UICollectionView.CellRegistration<FooterCell, Item> { [weak self] cell, indexPath, item in
                 cell.textView.attributedText = self?.footerAttributedString
                 cell.button.setTitle(self?.buttonTitle, for: .normal)
                 cell.button.backgroundColor = self?.accentColor ?? .systemBlue
-                self?.footer = cell
-            }
-
-            let spacerRegistration = UICollectionView.CellRegistration<Spacer, Item> { [weak self] cell, indexPath, item in
-                cell.heightConstraint.constant = self?.spacerHeight ?? 0
             }
 
             dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: containerCollectionView, cellProvider: { collectionView, indexPath, item in
@@ -451,8 +439,6 @@ public class SinglePageOnboardingController: UIViewController {
                     return collectionView.dequeueConfiguredReusableCell(using: footerRegistration, for: indexPath, item: item)
                 case .onboarding(_):
                     return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
-                case .spacer:
-                    return collectionView.dequeueConfiguredReusableCell(using: spacerRegistration, for: indexPath, item: item)
                 }
 
             })
@@ -461,31 +447,63 @@ public class SinglePageOnboardingController: UIViewController {
             containerCollectionView.translatesAutoresizingMaskIntoConstraints = false
             containerCollectionView.allowsSelection = false
 
+            addSubview(footerView)
+            footerView.translatesAutoresizingMaskIntoConstraints = false
+
+            NSLayoutConstraint.activate([
+                footerView.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: 0),
+                footerView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+                footerView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
+                footerView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            ])
+
+            footerView.textView.attributedText = footerAttributedString
+            footerView.button.setTitle(buttonTitle, for: .normal)
+            footerView.button.backgroundColor = accentColor ?? .systemBlue
+
             var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
             snapshot.appendSections(Section.allCases)
             snapshot.appendItems([.header], toSection: .header)
             snapshot.appendItems(onboardingItems.map({ Item.onboarding($0) }), toSection: .main)
-            snapshot.appendItems([.spacer], toSection: .spacer)
             snapshot.appendItems([.footer], toSection: .footer)
             dataSource.apply(snapshot, animatingDifferences: false)
         }
 
-        func adjustSpacerToFit() {
+        override func layoutSubviews() {
+            super.layoutSubviews()
 
-            let footerHeight: CGFloat = footer?.bounds.size.height ?? 0
+            useAppropriateFooterRespectingActualContentSize()
+        }
 
-            let actualContentHeight = containerCollectionView.contentSize.height - spacerHeight
-            if actualContentHeight >= bounds.size.height {
-                spacerHeight = 0
-            } else {
-                let remainingSpaceHeight = bounds.size.height - actualContentHeight
-                spacerHeight = remainingSpaceHeight - footerHeight
+        func useAppropriateFooterRespectingActualContentSize() {
+            let footerHeight = footerView.bounds.size.height
+            var actualContentHeight = containerCollectionView.contentSize.height
+            var currentSnapshot = dataSource.snapshot(for: .footer)
+
+            if currentSnapshot.visibleItems.count > 0 {
+                actualContentHeight -= footerHeight
             }
 
-            containerCollectionView.reloadData()
+            if actualContentHeight >= bounds.size.height {
+                footerView.isHidden = true
 
-            let adjustedActualContentHeight = containerCollectionView.contentSize.height - spacerHeight
-            containerCollectionView.isScrollEnabled = adjustedActualContentHeight >= bounds.size.height
+                if currentSnapshot.visibleItems.count == 0 {
+                    currentSnapshot.append([.footer])
+                }
+
+                containerCollectionView.isScrollEnabled = true
+
+            } else {
+                footerView.isHidden = false
+
+                if currentSnapshot.visibleItems.count > 0 {
+                    currentSnapshot.delete([.footer])
+                }
+
+                containerCollectionView.isScrollEnabled = false
+            }
+
+            dataSource.apply(currentSnapshot, to: .footer)
         }
 
     }
@@ -573,7 +591,7 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
 
                  Commend out here.
                  */
-//                .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
+                .environment(\.sizeCategory, .accessibilityExtraExtraExtraLarge)
 
             })
             .ignoresSafeArea()
