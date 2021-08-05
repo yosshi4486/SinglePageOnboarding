@@ -116,6 +116,17 @@ public class SinglePageOnboardingController: UIViewController {
         }
     }
 
+    /// The space between each feature item cell. The default value is 30pt.
+    public var spacingBetweenEachFeatureItem: CGFloat {
+        get {
+            return onboardingView.spaceBetweenEachFeatureItem
+        }
+
+        set {
+            onboardingView.spaceBetweenEachFeatureItem = newValue
+        }
+    }
+
     /// The tintColor that affects all descendant view.
     ///
     /// If you provide `imageColor` in featureItems, the tintColor is ignored in feature item cell.

@@ -59,6 +59,8 @@ class OnbarodingView: UIView {
         }
     }
 
+    var spaceBetweenEachFeatureItem: CGFloat = 30
+
     private let containerCollectionView: UICollectionView = {
         var configuration = UICollectionLayoutListConfiguration(appearance: .plain)
         configuration.showsSeparators = false
@@ -126,7 +128,7 @@ class OnbarodingView: UIView {
                 cell.imageView.image = onboardingItem.image
                 cell.imageView.tintColor = onboardingItem.imageColor ?? self?.tintColor
                 cell.imageSize = onboardingItem.imageSize
-                cell.spaceBetweenItem = 50
+                cell.spaceBetweenItem = self?.spaceBetweenEachFeatureItem ?? 30
                 cell.containerStack.spacing = onboardingItem.spacingBetweenImageAndContentView
             }
         }

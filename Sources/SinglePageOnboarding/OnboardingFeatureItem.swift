@@ -28,7 +28,7 @@ public struct OnboadingFeatureItem {
     /// The description of the onboarding information
     public let description: String
 
-    public init(title: String, description: String, image: UIImage, imageColor: UIColor? = nil, imageSize: CGSize = .init(width: 50, height: 50), spacingBetweenImageAndContentView: CGFloat = 15) {
+    public init(title: String, description: String, image: UIImage, imageColor: UIColor? = nil, imageSize: CGSize = .init(width: 40, height: 35), spacingBetweenImageAndContentView: CGFloat = 15) {
         self.title = title
         self.description = description
         self.image = image
