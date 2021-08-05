@@ -1,5 +1,5 @@
 //
-//  SinglePageOnbarodingUIKitView.swift
+//  OnbarodingView.swift
 //  
 //
 //  Created by yosshi4486 on 2021/08/05.
@@ -15,7 +15,7 @@ import UIKit
 /// UICollectionView with UICollectionLayoutListConfiguration make it easy to implement adaptive onboarding view.
 ///
 ///
-class SinglePageOnbarodingUIKitView: UIView {
+class OnbarodingView: UIView {
 
     enum Section: Int, CaseIterable {
         case header

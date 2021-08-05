@@ -106,12 +106,12 @@ public class SinglePageOnboardingController: UIViewController {
     }
 
     /// The internal view that is loaded in `loadView()`.
-    private var singlePageOnboardingUIKitView: SinglePageOnbarodingUIKitView!
+    private var singlePageOnboardingUIKitView: OnbarodingView!
 
     public init(title: String?, featureItems: [OnboadingFeatureItem], action: OnboardingAction) {
         precondition(featureItems.count <= 3, "The count of onboarding items must be smaller than 3.")
 
-        self.singlePageOnboardingUIKitView = SinglePageOnbarodingUIKitView(
+        self.singlePageOnboardingUIKitView = OnbarodingView(
             title: title,
             featureItems: featureItems,
             action: action
