@@ -27,6 +27,11 @@ let onboarding = SinglePageOnboardingController(
 self.present(onboarding, animated: true, completion: nil)
 ```
 
+
+Also, please check sample project that is located here:
+https://github.com/yosshi4486/SinglePageOnboarding/blob/05d3847e26b54de15b3edb591df130268178724a/Samples/SampleOnboarding/SampleOnboarding/ViewController.swift#L19-L69
+
+
 ## Installation
 
 Install this package from url(https://github.com/yosshi4486/SinglePageOnboarding) via swift package manager.
