@@ -42,11 +42,11 @@ public class SinglePageOnboardingController: UIViewController {
     /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
     public override var title: String? {
         get {
-            return singlePageOnboardingUIKitView.title
+            return onboardingView.title
         }
 
         set {
-            singlePageOnboardingUIKitView.title = newValue
+            onboardingView.title = newValue
         }
     }
 
@@ -55,11 +55,11 @@ public class SinglePageOnboardingController: UIViewController {
     /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
     public var featureItems: [OnboadingFeatureItem] {
         get {
-            return singlePageOnboardingUIKitView.featureItems
+            return onboardingView.featureItems
         }
 
         set {
-            singlePageOnboardingUIKitView.featureItems = newValue
+            onboardingView.featureItems = newValue
         }
     }
 
@@ -67,28 +67,28 @@ public class SinglePageOnboardingController: UIViewController {
     ///
     /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
     public var action: OnboardingAction {
-        return singlePageOnboardingUIKitView.action
+        return onboardingView.action
     }
 
     /// The attributed string that will be set to footer text view. The default value is nil.
     public var footerAttributedString: NSAttributedString? {
         get {
-            return singlePageOnboardingUIKitView.footerAttributedString
+            return onboardingView.footerAttributedString
         }
 
         set {
-            singlePageOnboardingUIKitView.footerAttributedString = newValue
+            onboardingView.footerAttributedString = newValue
         }
     }
 
     /// The text view delegate that will be set to footer text view. The default value is nil.
     public weak var footerTextViewDelegate: UITextViewDelegate? {
         get {
-            return singlePageOnboardingUIKitView.footerTextViewDelegate
+            return onboardingView.footerTextViewDelegate
         }
 
         set {
-            singlePageOnboardingUIKitView.footerTextViewDelegate = newValue
+            onboardingView.footerTextViewDelegate = newValue
         }
     }
 
@@ -97,21 +97,21 @@ public class SinglePageOnboardingController: UIViewController {
     /// If you provide `imageColor` in featureItems, the tintColor is ignored in feature item cell.
     public var tintColor: UIColor! {
         get {
-            return singlePageOnboardingUIKitView.tintColor
+            return onboardingView.tintColor
         }
 
         set {
-            singlePageOnboardingUIKitView.tintColor = newValue
+            onboardingView.tintColor = newValue
         }
     }
 
     /// The internal view that is loaded in `loadView()`.
-    private var singlePageOnboardingUIKitView: OnbarodingView!
+    private var onboardingView: OnbarodingView!
 
     public init(title: String?, featureItems: [OnboadingFeatureItem], action: OnboardingAction) {
         precondition(featureItems.count <= 3, "The count of onboarding items must be smaller than 3.")
 
-        self.singlePageOnboardingUIKitView = OnbarodingView(
+        self.onboardingView = OnbarodingView(
             title: title,
             featureItems: featureItems,
             action: action
@@ -125,14 +125,14 @@ public class SinglePageOnboardingController: UIViewController {
     }
 
     public override func loadView() {
-        view = singlePageOnboardingUIKitView
+        view = onboardingView
     }
 
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
 
         if traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory {
-            singlePageOnboardingUIKitView.useAppropriateFooterRespectingForActualContentSize()
+            onboardingView.useAppropriateFooterRespectingForActualContentSize()
         }
     }    
 
