@@ -34,17 +34,32 @@ public class SinglePageOnboardingController: UIViewController {
     /// The title of onboarding view, suck as "Welcome to my app" or "What's New".
     ///
     /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
-    public let onboardingTitle: String
+    public override var title: String? {
+        get {
+            return onboardingTitle
+        }
+
+        set {
+            onboardingTitle = newValue
+            singlePageOnboardingUIKitView.title = newValue
+        }
+    }
+
+    private var onboardingTitle: String?
 
     /// The items which convery about your app key features to the user.
     ///
     /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
-    public let onboardingFeatureItems: [OnboadingFeatureItem]
+    public var featureItems: [OnboadingFeatureItem] {
+        didSet {
+            singlePageOnboardingUIKitView.featureItems = featureItems
+        }
+    }
 
     /// The action that is used in bottom button.
     ///
     /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
-    public let onboardingAction: OnboardingAction
+    public let action: OnboardingAction
 
     public var footerAttributedString: NSAttributedString? {
         didSet {
@@ -54,11 +69,11 @@ public class SinglePageOnboardingController: UIViewController {
 
     public weak var footerTextViewDelegate: UITextViewDelegate? {
         didSet {
-
+            singlePageOnboardingUIKitView.footerTextViewDelegate = footerTextViewDelegate
         }
     }
 
-    public var tintColor: UIColor? {
+    public var tintColor: UIColor! {
         didSet {
             singlePageOnboardingUIKitView.tintColor = tintColor ?? .systemBlue
         }
@@ -66,12 +81,12 @@ public class SinglePageOnboardingController: UIViewController {
 
     private var singlePageOnboardingUIKitView: SinglePageOnbarodingUIKitView!
 
-    public init(onboardingTitle: String, onboardingFeatureItems: [OnboadingFeatureItem], onboardingAction: OnboardingAction) {
-        precondition(onboardingFeatureItems.count <= 3, "The count of onboarding items must be smaller than 3.")
+    public init(title: String?, featureItems: [OnboadingFeatureItem], action: OnboardingAction) {
+        precondition(featureItems.count <= 3, "The count of onboarding items must be smaller than 3.")
 
-        self.onboardingTitle = onboardingTitle
-        self.onboardingFeatureItems = onboardingFeatureItems
-        self.onboardingAction = onboardingAction
+        self.onboardingTitle = title
+        self.featureItems = featureItems
+        self.action = action
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -83,9 +98,9 @@ public class SinglePageOnboardingController: UIViewController {
     public override func loadView() {
 
         singlePageOnboardingUIKitView = SinglePageOnbarodingUIKitView(
-            onboardingTitle: onboardingTitle,
-            onboardingFeatureItems: onboardingFeatureItems,
-            onboardingAction: onboardingAction
+            title: title,
+            featureItems: featureItems,
+            action: action
         )
 
         view = singlePageOnboardingUIKitView
@@ -107,22 +122,22 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
 
     public typealias UIViewControllerType = SinglePageOnboardingController
 
-    public let onboardingTitle: String
+    public let title: String?
 
-    public let onboardingFeatureItems: [OnboadingFeatureItem]
+    public let featureItems: [OnboadingFeatureItem]
 
-    public let onboardingAction: OnboardingAction
+    public let action: OnboardingAction
 
     public let footerAttributedString: NSAttributedString?
 
-    public let accentColor: UIColor?
+    public weak var footerTextViewDelegate: UITextViewDelegate?
 
     public func makeUIViewController(context: Context) -> UIViewControllerType {
 
         let uiViewController = UIViewControllerType(
-            onboardingTitle: self.onboardingTitle,
-            onboardingFeatureItems: self.onboardingFeatureItems,
-            onboardingAction: self.onboardingAction
+            title: self.title,
+            featureItems: self.featureItems,
+            action: self.action
         )
 
         return uiViewController
@@ -130,7 +145,8 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
 
     public func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
         uiViewController.footerAttributedString = self.footerAttributedString
-        uiViewController.tintColor = self.accentColor
+        uiViewController.tintColor = UIColor(Color.accentColor)
+        uiViewController.footerTextViewDelegate = self.footerTextViewDelegate
     }
 
     public func makeCoordinator() -> Coordinator { Coordinator() }
@@ -163,15 +179,14 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
         Color.gray
             .sheet(isPresented: $isPresentated, content: {
                 SinglePageOnboardingView(
-                    onboardingTitle: "What's New",
-                    onboardingFeatureItems: [
+                    title: "What's New",
+                    featureItems: [
                         OnboadingFeatureItem(image: UIImage(systemName: "heart.fill")!, imageColor: UIColor.systemPink, title: "More Personalized", description: "Top Stories picked for you and recommendations from Siri."),
                         OnboadingFeatureItem(image: UIImage(systemName: "newspaper")!, imageColor: UIColor.systemRed, title: "New Articles Tab", description: "Discover latest articles."),
                         OnboadingFeatureItem(image: UIImage(systemName: "play.rectangle.fill")!.withTintColor(.systemBlue, renderingMode: .alwaysTemplate), imageColor: UIColor.blue, title: "Watch Video News", description: "You can now watch video news in Video News Tab."),
                     ],
-                    onboardingAction: OnboardingAction(title: "Next", handler: { _ in }),
-                    footerAttributedString: attributedString,
-                    accentColor: UIColor.purple
+                    action: OnboardingAction(title: "Next", handler: { _ in }),
+                    footerAttributedString: attributedString
                 )
                 /*
                  Please try to check differences when accessibility settings are changed by users.
@@ -179,6 +194,7 @@ struct SinglePageOnboardingController_Previews: PreviewProvider {
                  Commend out here.
                  */
                 .environment(\.sizeCategory, .accessibilityExtraExtraLarge)
+                .accentColor(Color.purple)
 
             })
             .ignoresSafeArea()
