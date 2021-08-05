@@ -2,6 +2,31 @@
 
 This package provides single page onboarding view controller that it is easy to provide onboarding experience.
 
+## Usage
+
+Use *Single Page Onboarding View Controller* to configure single page onboarding content. After configuring the single page onboarding controller with the feature items and action, present it using the `present(_:animated:completion:)` method. UIKit displays onboarding content modaly over your app's content.
+
+```swift
+let onboarding = SinglePageOnboardingController(
+    title: "Welcome to My App!",
+    featureItems: [
+        OnboadingFeatureItem(
+            title: "More Personalized",
+            description: "Top Stories picked for you and recommendations from Siri.",
+            image: UIImage(systemName: "heart.fill")!
+        )
+    ],
+    action: OnboardingAction(
+        title: "Agree and Continue",
+        handler: { action in
+            // Do something, such as storing flag in `UserDefaults`.
+        }
+    )
+)
+
+self.present(onboarding, animated: true, completion: nil)
+```
+
 ## Installation
 
 Install this package from url(https://github.com/yosshi4486/SinglePageOnboarding) via swift package manager.
