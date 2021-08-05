@@ -20,12 +20,13 @@ let onboarding = SinglePageOnboardingController(
             image: UIImage(systemName: "heart.fill")!
         )
     ],
-    action: OnboardingAction(
+)
+
+onboarding.action = OnboardingAction(
         title: "Agree and Continue",
         handler: { action in
-            // Do something, such as storing flag in `UserDefaults`.
+            onboarding.dismiss(animated: true, completion: nil)
         }
-    )
 )
 
 self.present(onboarding, animated: true, completion: nil)

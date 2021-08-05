@@ -12,7 +12,25 @@ import UIKit
 /// Use this class to configure single page onboarding content. After configuring the single page onboarding controller with the feature items and action,
 /// present it using the `present(_:animated:completion:)` method. UIKit displays onboarding content modaly over your app's content.
 ///
-///     let onboarding = SinglePageOnboardingController(title: "Welcome to My App!", featureItems: [OnboadingFeatureItem(title: "More Personalized", description: "Top Stories picked for you and recommendations from Siri.", image: UIImage(systemName: "heart.fill")!)], action: OnboardingAction(title: "Agree and Continue", handler: { _ in }))
+///     let onboarding = SinglePageOnboardingController(
+///         title: "Welcome to My App!",
+///         featureItems: [
+///             OnboadingFeatureItem(
+///                 title: "More Personalized",
+///                 description: "Top Stories picked for you and recommendations from Siri.",
+///                 image: UIImage(systemName: "heart.fill")!
+///             )
+///         ],
+///      )
+///
+///     onboarding.action = OnboardingAction(
+///         title: "Agree and Continue",
+///         handler: { action in
+///             // Do something.
+///             onboarding.dismiss(animated: true, completion: nil)
+///         }
+///     )
+///
 ///     self.present(onboarding, animated: true, completion: nil)
 ///
 /// # Key Concepts of This View Controller
