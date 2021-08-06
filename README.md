@@ -17,9 +17,22 @@ let onboarding = SinglePageOnboardingController(
         OnboadingFeatureItem(
             title: "More Personalized",
             description: "Top Stories picked for you and recommendations from Siri.",
-            image: UIImage(systemName: "heart.fill")!
+            image: UIImage(systemName: "heart.fill")!,
+            imageColor: UIColor.systemPink
+        ),
+        OnboadingFeatureItem(
+            title: "New Articles Tab",
+            description: "Discover latest articles.",
+            image: UIImage(systemName: "newspaper")!,
+            imageColor: UIColor.systemRed
+        ),
+        OnboadingFeatureItem(
+            title: "Watch Video News",
+            description: "You can now watch video news in Video News Tab.",
+            image: UIImage(systemName: "play.rectangle.fill")!,
+            imageColor: UIColor.blue
         )
-    ],
+    ]
 )
 
 onboarding.action = OnboardingAction(

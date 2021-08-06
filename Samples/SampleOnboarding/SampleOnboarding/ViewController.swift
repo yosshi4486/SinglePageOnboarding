@@ -39,7 +39,7 @@ class ViewController: UIViewController {
                     description: "You can now watch video news in Video News Tab.",
                     image: UIImage(systemName: "play.rectangle.fill")!,
                     imageColor: UIColor.blue
-                ),
+                )
             ]
         )
         onboarding.action = OnboardingAction(

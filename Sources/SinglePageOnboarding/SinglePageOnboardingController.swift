@@ -15,23 +15,37 @@ import UIKit
 ///     let onboarding = SinglePageOnboardingController(
 ///         title: "Welcome to My App!",
 ///         featureItems: [
+///             /* You must pass 3 onboarding feature items. */
 ///             OnboadingFeatureItem(
 ///                 title: "More Personalized",
 ///                 description: "Top Stories picked for you and recommendations from Siri.",
-///                 image: UIImage(systemName: "heart.fill")!
+///                 image: UIImage(systemName: "heart.fill")!,
+///                 imageColor: UIColor.systemPink
+///             ),
+///             OnboadingFeatureItem(
+///                 title: "New Articles Tab",
+///                 description: "Discover latest articles.",
+///                 image: UIImage(systemName: "newspaper")!,
+///                 imageColor: UIColor.systemRed
+///             ),
+///             OnboadingFeatureItem(
+///                 title: "Watch Video News",
+///                 description: "You can now watch video news in Video News Tab.",
+///                 image: UIImage(systemName: "play.rectangle.fill")!,
+///                 imageColor: UIColor.blue
 ///             )
-///         ],
+///         ]
 ///      )
 ///
-///     onboarding.action = OnboardingAction(
-///         title: "Agree and Continue",
-///         handler: { action in
-///             // Do something.
-///             onboarding.dismiss(animated: true, completion: nil)
-///         }
-///     )
+///      onboarding.action = OnboardingAction(
+///          title: "Agree and Continue",
+///          handler: { action in
+///              // Do something.
+///              onboarding.dismiss(animated: true, completion: nil)
+///          }
+///      )
 ///
-///     self.present(onboarding, animated: true, completion: nil)
+///      self.present(onboarding, animated: true, completion: nil)
 ///
 /// # Key Concepts of This View Controller
 ///
@@ -40,18 +54,17 @@ import UIKit
 /// - If there is enough space of the contents, layout the button pinned to bottom, otherwise the button become scrollable contents.
 /// - The footer attributed string and the button are provided assuming situations for agreements to users, so avoiding a interaction without reading all contents  has benefits of some legal acpects.
 /// - Adopt trait collection changes, such as content category.
-/// - Avoid complex implementations whenever possible.
+///
+/// Following the key concepts, Single Page Onboarding Controller use both scrollable footer view and container child footer view to switch pinned or scrollable behavior by content size.
+/// When the content height is larger than view height, the scrollable footer view is shown, otherwise the container child footer view is shown.
 ///
 /// # Design of SinglePageOnboardingController
 ///
-/// Following the key concepts, Single Page Onboarding Controller decide to use both collectionview and footerview to switch footer pinned behavior by content size.
-///
-/// When the actual content height is larger than view height, the  footer cell of the collectionview is shown, otherwise the footerview is shown.
+/// The APIs of Single Page Onboarding Controller Imitates `UIAlertController`.
 ///
 /// # TO BE FIXED
 ///
 /// - Refine english writings by getting review from other reviewers.
-/// - The textview of FooterCell doesn't reflect prefered content category's change.
 ///
 public class SinglePageOnboardingController: UIViewController {
 
