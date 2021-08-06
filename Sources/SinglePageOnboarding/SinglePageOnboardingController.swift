@@ -162,11 +162,22 @@ public class SinglePageOnboardingController: UIViewController {
         view = onboardingView
     }
 
+    public override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        onboardingView.switchToAppropriateFooterViewRespectingForContentSize()
+    }
+
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
 
-        onboardingView.useAppropriateFooterRespectingForActualContentSize()
-    }    
+        if traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory {
+            onboardingView.setNeedsLayout()
+            onboardingView.layoutIfNeeded()
+            onboardingView.switchToAppropriateFooterViewRespectingForContentSize()
+        }
+
+    }
 
 }
 

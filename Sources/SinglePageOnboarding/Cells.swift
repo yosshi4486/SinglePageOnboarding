@@ -82,7 +82,18 @@ final class HeaderCell: UICollectionViewListCell {
     }
 }
 
-final class FeatureCell: UICollectionViewListCell {
+final class FeatureView: UIView {
+
+    var item: OnboadingFeatureItem? {
+        didSet {
+            titleLabel.text = item?.title
+            descriptionLabel.text = item?.description
+            imageView.image = item?.image
+            imageView.tintColor = item?.imageColor
+            imageSize = item?.imageSize ?? .init(width: 30, height: 30)
+            containerStack.spacing = item?.spacingBetweenImageAndContentView ?? 8
+        }
+    }
 
     let containerStack: UIStackView = {
         let stackView = UIStackView()

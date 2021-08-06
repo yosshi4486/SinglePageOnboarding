@@ -17,60 +17,81 @@ import UIKit
 ///
 class OnbarodingView: UIView {
 
-    enum Section: Int, CaseIterable {
-        case header
-        case main
-        case footer
+    var title: String? {
+        didSet {
+            titleLabel.text = title
+        }
     }
 
-    enum Item: Hashable {
-        case header
-        case footer
-        case onboarding(OnboadingFeatureItem)
+    var featureItems: [OnboadingFeatureItem] {
+        didSet {
+
+        }
     }
-
-    var title: String?
-
-    var featureItems: [OnboadingFeatureItem]
 
     var action: OnboardingAction? {
         didSet {
-            footerView.button.setTitle(action?.title, for: .normal)
-            footerView.button.backgroundColor = tintColor
-            footerView.button.addAction(UIAction(handler: { [weak self] _ in
+            scrollableFooterView.button.setTitle(action?.title, for: .normal)
+            scrollableFooterView.button.backgroundColor = tintColor
+            scrollableFooterView.button.addAction(UIAction(handler: { [weak self] _ in
                 guard let onboardingAction = self?.action else {
                     return
                 }
 
                 onboardingAction.handler(onboardingAction)
             }), for: .touchUpInside)
+
+            containerChildFooterView.button.setTitle(action?.title, for: .normal)
+            containerChildFooterView.button.backgroundColor = tintColor
+            containerChildFooterView.button.addAction(UIAction(handler: { [weak self] _ in
+                guard let onboardingAction = self?.action else {
+                    return
+                }
+
+                onboardingAction.handler(onboardingAction)
+            }), for: .touchUpInside)
+
         }
     }
 
     var footerAttributedString: NSAttributedString? {
         didSet {
-            footerView.textView.attributedText = footerAttributedString
+            scrollableFooterView.textView.attributedText = footerAttributedString
+            containerChildFooterView.textView.attributedText = footerAttributedString
         }
     }
 
     weak var footerTextViewDelegate: UITextViewDelegate? {
         didSet {
-            footerView.textView.delegate = footerTextViewDelegate
+            scrollableFooterView.textView.delegate = footerTextViewDelegate
+            containerChildFooterView.textView.delegate = footerTextViewDelegate
         }
     }
 
     var spaceBetweenEachFeatureItem: CGFloat = 30
 
-    private let containerCollectionView: UICollectionView = {
-        var configuration = UICollectionLayoutListConfiguration(appearance: .plain)
-        configuration.showsSeparators = false
-        let layout = UICollectionViewCompositionalLayout.list(using: configuration)
-        return UICollectionView(frame: .zero, collectionViewLayout: layout)
+    private let scrollView: UIScrollView = .init()
+
+    private let contentView: UIView = .init()
+
+    let titleLabel: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 0
+        label.adjustsFontForContentSizeCategory = true
+        label.font = .preferredFont(forTextStyle: .largeTitle).bold()
+        label.textAlignment = .center
+        return label
     }()
 
-    private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
+    let topFeature: FeatureView = .init()
 
-    private let footerView: FooterView = FooterView(frame: .zero)
+    let midFeature: FeatureView = .init()
+
+    let bottomFeature: FeatureView = .init()
+
+    let scrollableFooterView = FooterView()
+
+    let containerChildFooterView = FooterView()
 
     public init(title: String?, featureItems: [OnboadingFeatureItem]) {
         self.title = title
@@ -87,137 +108,92 @@ class OnbarodingView: UIView {
 
     private func setup() {
         setupConstraints()
-        setupDiffableDataSource()
         applyInitialData()
     }
 
     private func setupConstraints() {
-        layoutMargins.left = 50
-        layoutMargins.right = 50
 
-        containerCollectionView.preservesSuperviewLayoutMargins = true
-        footerView.preservesSuperviewLayoutMargins = true
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        topFeature.translatesAutoresizingMaskIntoConstraints = false
+        midFeature.translatesAutoresizingMaskIntoConstraints = false
+        bottomFeature.translatesAutoresizingMaskIntoConstraints = false
+        scrollableFooterView.translatesAutoresizingMaskIntoConstraints = false
+        containerChildFooterView.translatesAutoresizingMaskIntoConstraints = false
 
-        addSubview(containerCollectionView)
-        addSubview(footerView)
-
-        footerView.translatesAutoresizingMaskIntoConstraints = false
-        containerCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(scrollView)
+        addSubview(containerChildFooterView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(topFeature)
+        contentView.addSubview(midFeature)
+        contentView.addSubview(bottomFeature)
+        contentView.addSubview(scrollableFooterView)
 
         NSLayoutConstraint.activate([
-            containerCollectionView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            containerCollectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            containerCollectionView.topAnchor.constraint(equalTo: topAnchor),
-            containerCollectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            /*
+             ScrollVIew
+             */
+            scrollView.widthAnchor.constraint(equalTo: widthAnchor),
+            scrollView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            /*
+             ContentView
+             */
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            contentView.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            /*
+             Views
+             */
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 60),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
+            topFeature.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 60),
+            topFeature.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+            topFeature.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
+            midFeature.topAnchor.constraint(equalTo: topFeature.bottomAnchor, constant: 30),
+            midFeature.leadingAnchor.constraint(equalTo: topFeature.leadingAnchor),
+            midFeature.trailingAnchor.constraint(equalTo: topFeature.trailingAnchor),
+            bottomFeature.topAnchor.constraint(equalTo: midFeature.bottomAnchor, constant: 30),
+            bottomFeature.leadingAnchor.constraint(equalTo: midFeature.leadingAnchor),
+            bottomFeature.trailingAnchor.constraint(equalTo: midFeature.trailingAnchor),
+            scrollableFooterView.topAnchor.constraint(greaterThanOrEqualTo: bottomFeature.bottomAnchor, constant: 30),
+            scrollableFooterView.leadingAnchor.constraint(equalTo: bottomFeature.leadingAnchor),
+            scrollableFooterView.trailingAnchor.constraint(equalTo: bottomFeature.trailingAnchor),
+            scrollableFooterView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
+            /*
+             Container Child Footer View
+             */
+            containerChildFooterView.leadingAnchor.constraint(equalTo: bottomFeature.leadingAnchor),
+            containerChildFooterView.trailingAnchor.constraint(equalTo: bottomFeature.trailingAnchor),
+            containerChildFooterView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -15)
         ])
 
-        NSLayoutConstraint.activate([
-            footerView.topAnchor.constraint(greaterThanOrEqualTo: topAnchor, constant: 0),
-            footerView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-            footerView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
-            footerView.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
-    }
-
-    private func setupDiffableDataSource() {
-
-        let cellRegistration = UICollectionView.CellRegistration<FeatureCell, Item> { [weak self] cell, indexPath, item in
-            if case .onboarding(let onboardingItem) = item {
-                cell.titleLabel.text = onboardingItem.title
-                cell.descriptionLabel.text = onboardingItem.description
-                cell.imageView.image = onboardingItem.image
-                cell.imageView.tintColor = onboardingItem.imageColor ?? self?.tintColor
-                cell.imageSize = onboardingItem.imageSize
-                cell.spaceBetweenItem = self?.spaceBetweenEachFeatureItem ?? 30
-                cell.containerStack.spacing = onboardingItem.spacingBetweenImageAndContentView
-            }
-        }
-
-        let headerRegistration = UICollectionView.CellRegistration<HeaderCell, Item> { [weak self] cell, indexPath, item in
-            cell.titleLabel.text = self?.title
-        }
-
-        let footerRegistration = UICollectionView.CellRegistration<FooterCell, Item> { [weak self] cell, indexPath, item in
-            cell.textView.attributedText = self?.footerAttributedString
-            cell.textView.delegate = self?.footerTextViewDelegate
-            cell.button.setTitle(self?.action?.title, for: .normal)
-            cell.button.backgroundColor = self?.tintColor
-            cell.button.addAction(UIAction(handler: { _ in
-                guard let onboardingAction = self?.action else {
-                    return
-                }
-
-                onboardingAction.handler(onboardingAction)
-            }), for: .touchUpInside)
-        }
-
-        dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: containerCollectionView, cellProvider: { collectionView, indexPath, item in
-            switch item {
-            case .header:
-                return collectionView.dequeueConfiguredReusableCell(using: headerRegistration, for: indexPath, item: item)
-            case .footer:
-                return collectionView.dequeueConfiguredReusableCell(using: footerRegistration, for: indexPath, item: item)
-            case .onboarding(_):
-                return collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: item)
-            }
-
-        })
-
-        containerCollectionView.dataSource = dataSource
-        containerCollectionView.allowsSelection = false
     }
 
     private func applyInitialData() {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        snapshot.appendSections(Section.allCases)
-        snapshot.appendItems([.header], toSection: .header)
-        snapshot.appendItems(featureItems.map({ Item.onboarding($0) }), toSection: .main)
-        snapshot.appendItems([.footer], toSection: .footer)
-        dataSource.apply(snapshot, animatingDifferences: false)
+        backgroundColor = .systemBackground
+
+        titleLabel.text = title
+
+        topFeature.item = featureItems[0]
+        midFeature.item = featureItems[1]
+        bottomFeature.item = featureItems[2]
+
     }
 
-    func useAppropriateFooterRespectingForActualContentSize() {
-
-        let footerHeight = footerView.bounds.size.height
-        var actualContentHeight = containerCollectionView.contentSize.height
-        var currentSnapshot = dataSource.snapshot(for: .footer)
-
-        if currentSnapshot.visibleItems.count == 0 {
-            actualContentHeight += footerHeight
-        }
-
-        /*
-         To stabilize behavior, adding a stabilizer height to actual content height.
-
-         Use footer view if the space is larger than double footer height, otherwise use collectionview's footer cell.
-         */
-        let stabilizer = footerHeight
-        actualContentHeight += stabilizer
-
-        if actualContentHeight >= bounds.size.height {
-            footerView.isHidden = true
-
-            if currentSnapshot.visibleItems.count == 0 {
-                currentSnapshot.append([.footer])
-            }
-
-            containerCollectionView.isScrollEnabled = true
-
+    func switchToAppropriateFooterViewRespectingForContentSize() {
+        if scrollView.contentSize.height >= bounds.height {
+            containerChildFooterView.isHidden = true
+            scrollableFooterView.isHidden = false
         } else {
-            footerView.isHidden = false
-
-            if currentSnapshot.visibleItems.count > 0 {
-                currentSnapshot.delete([.footer])
-            }
-
-            containerCollectionView.isScrollEnabled = false
+            containerChildFooterView.isHidden = false
+            scrollableFooterView.isHidden = true
         }
-
-        // Apply changes only if some differences are recognized.
-        if currentSnapshot.visibleItems != dataSource.snapshot(for: .footer).visibleItems {
-            dataSource.apply(currentSnapshot, to: .footer, animatingDifferences: false)
-        }
-
     }
 
 }
