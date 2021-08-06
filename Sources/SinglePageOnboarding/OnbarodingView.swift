@@ -144,8 +144,8 @@ class OnbarodingView: UIView {
              Views
              */
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 60),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 50),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -50),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 30),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30),
             topFeature.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 60),
             topFeature.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             topFeature.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
