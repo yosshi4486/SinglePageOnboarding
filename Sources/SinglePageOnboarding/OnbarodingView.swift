@@ -94,6 +94,7 @@ class OnbarodingView: UIView {
         bottomFeature.item = featureItems[2]
 
         setupConstraints()
+
         backgroundColor = .systemBackground
         topFeature.spaceBetweenItem = spaceBetweenEachFeatureItem
         midFeature.spaceBetweenItem = spaceBetweenEachFeatureItem
@@ -143,8 +144,8 @@ class OnbarodingView: UIView {
              Views
              */
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 60),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
+            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 50),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -50),
             topFeature.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 60),
             topFeature.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             topFeature.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
