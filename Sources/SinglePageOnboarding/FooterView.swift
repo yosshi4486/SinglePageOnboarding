@@ -9,6 +9,20 @@ import UIKit
 
 final class FooterView: UIView {
 
+    var action: OnboardingAction? {
+        didSet {
+            button.setTitle(action?.title, for: .normal)
+            button.backgroundColor = tintColor
+            button.addAction(UIAction(handler: { [weak self] _ in
+                guard let onboardingAction = self?.action else {
+                    return
+                }
+
+                onboardingAction.handler(onboardingAction)
+            }), for: .touchUpInside)
+        }
+    }
+
     var textView: UITextView = {
         let view = UITextView()
         view.isEditable = false

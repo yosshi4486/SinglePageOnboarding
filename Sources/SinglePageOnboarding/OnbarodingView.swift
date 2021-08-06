@@ -33,26 +33,8 @@ class OnbarodingView: UIView {
 
     var action: OnboardingAction? {
         didSet {
-            scrollableFooterView.button.setTitle(action?.title, for: .normal)
-            scrollableFooterView.button.backgroundColor = tintColor
-            scrollableFooterView.button.addAction(UIAction(handler: { [weak self] _ in
-                guard let onboardingAction = self?.action else {
-                    return
-                }
-
-                onboardingAction.handler(onboardingAction)
-            }), for: .touchUpInside)
-
-            containerChildFooterView.button.setTitle(action?.title, for: .normal)
-            containerChildFooterView.button.backgroundColor = tintColor
-            containerChildFooterView.button.addAction(UIAction(handler: { [weak self] _ in
-                guard let onboardingAction = self?.action else {
-                    return
-                }
-
-                onboardingAction.handler(onboardingAction)
-            }), for: .touchUpInside)
-
+            scrollableFooterView.action = action
+            containerChildFooterView.action = action
         }
     }
 
@@ -98,19 +80,19 @@ class OnbarodingView: UIView {
     public init(title: String?, featureItems: [OnboadingFeatureItem]) {
         self.title = title
         self.featureItems = featureItems
-
         super.init(frame: .zero)
 
-        setup()
+        titleLabel.text = title
+        topFeature.item = featureItems[0]
+        midFeature.item = featureItems[1]
+        bottomFeature.item = featureItems[2]
+
+        setupConstraints()
+        backgroundColor = .systemBackground
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    private func setup() {
-        setupConstraints()
-        applyInitialData()
     }
 
     private func setupConstraints() {
@@ -175,16 +157,6 @@ class OnbarodingView: UIView {
             containerChildFooterView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -15)
         ])
 
-    }
-
-    private func applyInitialData() {
-        backgroundColor = .systemBackground
-
-        titleLabel.text = title
-
-        topFeature.item = featureItems[0]
-        midFeature.item = featureItems[1]
-        bottomFeature.item = featureItems[2]
     }
 
     func switchToAppropriateFooterViewRespectingForContentSize() {

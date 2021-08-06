@@ -68,15 +68,16 @@ public class SinglePageOnboardingController: UIViewController {
         }
     }
 
-    /// The items which convery about your app key features to the user.
+    /// The items which convery about your app key features to the user. The count of items must be 3.
     ///
-    /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method
+    /// This property is set to the value you specified in the init(onboardingTitle:onboardingItems:handler) method.
     public var featureItems: [OnboadingFeatureItem] {
         get {
             return onboardingView.featureItems
         }
 
         set {
+            precondition(newValue.count == 3, "The count of items must be 3.")
             onboardingView.featureItems = newValue
         }
     }
@@ -143,6 +144,11 @@ public class SinglePageOnboardingController: UIViewController {
     /// The internal view that is loaded in `loadView()`.
     private var onboardingView: OnbarodingView!
 
+    /// Creates *Single Page Onboarding Controller* instance by the given title and feature items.
+    ///
+    /// - Parameters:
+    ///   - title: The title of the obnarding content.
+    ///   - featureItems: The features of the onboarding experience. The count of items must be 3, if the count of items is bigger, or smaller than 3, a runtime crash will occur. (but it is ignored in production scheme.)
     public init(title: String?, featureItems: [OnboadingFeatureItem]) {
         precondition(featureItems.count <= 3, "The count of onboarding items must be smaller than 3.")
 
@@ -172,6 +178,9 @@ public class SinglePageOnboardingController: UIViewController {
         super.traitCollectionDidChange(previousTraitCollection)
 
         if traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory {
+            /*
+             Force update onboardingview's layout just before using the scrollview contentsize.
+             */
             onboardingView.setNeedsLayout()
             onboardingView.layoutIfNeeded()
             onboardingView.switchToAppropriateFooterViewRespectingForContentSize()
