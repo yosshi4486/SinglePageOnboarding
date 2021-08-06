@@ -1,86 +1,11 @@
 //
-//  Cells.swift
+//  FeatureView.swift
 //  
 //
-//  Created by yosshi4486 on 2021/08/05.
+//  Created by yosshi4486 on 2021/08/06.
 //
 
 import UIKit
-
-final class HeaderCell: UICollectionViewListCell {
-
-    let titleLabel: UILabel = {
-        let label = UILabel()
-        label.numberOfLines = 0
-        label.adjustsFontForContentSizeCategory = true
-        label.font = .preferredFont(forTextStyle: .largeTitle).bold()
-        label.textAlignment = .center
-        return label
-    }()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setup()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    private func setup() {
-        addSubview(titleLabel)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        let bottomConstraint = titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -60)
-        bottomConstraint.priority = .defaultHigh
-
-        NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 60),
-            bottomConstraint,
-            titleLabel.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
-        ])
-
-    }
-
-}
-
-@dynamicMemberLookup final class FooterCell: UICollectionViewListCell {
-
-    var footerView: FooterView = .init()
-
-    public subscript<U>(dynamicMember keyPath: ReferenceWritableKeyPath<FooterView, U>) -> U {
-        get {
-            footerView[keyPath:keyPath]
-        }
-
-        set {
-            footerView[keyPath:keyPath] = newValue
-        }
-    }
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setup()
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    private func setup() {
-        addSubview(footerView)
-        footerView.translatesAutoresizingMaskIntoConstraints = false
-
-        NSLayoutConstraint.activate([
-            footerView.topAnchor.constraint(equalTo: topAnchor),
-            footerView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            footerView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-            footerView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
-        ])
-
-    }
-}
 
 final class FeatureView: UIView {
 

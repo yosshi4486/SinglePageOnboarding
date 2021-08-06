@@ -25,7 +25,9 @@ class OnbarodingView: UIView {
 
     var featureItems: [OnboadingFeatureItem] {
         didSet {
-
+            topFeature.item = featureItems[0]
+            midFeature.item = featureItems[1]
+            bottomFeature.item = featureItems[2]
         }
     }
 
@@ -183,7 +185,6 @@ class OnbarodingView: UIView {
         topFeature.item = featureItems[0]
         midFeature.item = featureItems[1]
         bottomFeature.item = featureItems[2]
-
     }
 
     func switchToAppropriateFooterViewRespectingForContentSize() {
