@@ -187,6 +187,7 @@ class OnbarodingView: UIView {
     }
 
     func useAppropriateFooterRespectingForActualContentSize() {
+
         let footerHeight = footerView.bounds.size.height
         var actualContentHeight = containerCollectionView.contentSize.height
         var currentSnapshot = dataSource.snapshot(for: .footer)
@@ -194,6 +195,14 @@ class OnbarodingView: UIView {
         if currentSnapshot.visibleItems.count == 0 {
             actualContentHeight += footerHeight
         }
+
+        /*
+         To stabilize behavior, adding a stabilizer height to actual content height.
+
+         Use footer view if the space is larger than double footer height, otherwise use collectionview's footer cell.
+         */
+        let stabilizer = footerHeight
+        actualContentHeight += stabilizer
 
         if actualContentHeight >= bounds.size.height {
             footerView.isHidden = true
