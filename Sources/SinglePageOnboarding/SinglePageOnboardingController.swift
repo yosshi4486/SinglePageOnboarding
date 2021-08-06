@@ -223,6 +223,7 @@ public struct SinglePageOnboardingView: UIViewControllerRepresentable {
         uiViewController.tintColor = self.tintColor ?? .systemBlue
         uiViewController.footerTextViewDelegate = self.footerTextViewDelegate
         uiViewController.action = self.action
+        uiViewController.spacingBetweenEachFeatureItem = 30
     }
 
     public func makeCoordinator() -> Coordinator { Coordinator() }

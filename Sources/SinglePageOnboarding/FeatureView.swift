@@ -106,7 +106,6 @@ final class FeatureView: UIView {
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
 
         bottomConstraint = containerStack.bottomAnchor.constraint(equalTo: bottomAnchor)
-        bottomConstraint.priority = .defaultHigh
 
         NSLayoutConstraint.activate([
             containerStack.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),

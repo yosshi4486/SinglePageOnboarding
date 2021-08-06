@@ -52,7 +52,13 @@ class OnbarodingView: UIView {
         }
     }
 
-    var spaceBetweenEachFeatureItem: CGFloat = 30
+    var spaceBetweenEachFeatureItem: CGFloat = 30 {
+        didSet {
+            topFeature.spaceBetweenItem = spaceBetweenEachFeatureItem
+            midFeature.spaceBetweenItem = spaceBetweenEachFeatureItem
+            bottomFeature.spaceBetweenItem = spaceBetweenEachFeatureItem
+        }
+    }
 
     private let scrollView: UIScrollView = .init()
 
@@ -67,15 +73,15 @@ class OnbarodingView: UIView {
         return label
     }()
 
-    let topFeature: FeatureView = .init()
+    private let topFeature: FeatureView = .init()
 
-    let midFeature: FeatureView = .init()
+    private let midFeature: FeatureView = .init()
 
-    let bottomFeature: FeatureView = .init()
+    private let bottomFeature: FeatureView = .init()
 
-    let scrollableFooterView = FooterView()
+    private let scrollableFooterView = FooterView()
 
-    let containerChildFooterView = FooterView()
+    private let containerChildFooterView = FooterView()
 
     public init(title: String?, featureItems: [OnboadingFeatureItem]) {
         self.title = title
@@ -89,6 +95,9 @@ class OnbarodingView: UIView {
 
         setupConstraints()
         backgroundColor = .systemBackground
+        topFeature.spaceBetweenItem = spaceBetweenEachFeatureItem
+        midFeature.spaceBetweenItem = spaceBetweenEachFeatureItem
+        bottomFeature.spaceBetweenItem = spaceBetweenEachFeatureItem
     }
 
     required init?(coder: NSCoder) {
@@ -139,13 +148,13 @@ class OnbarodingView: UIView {
             topFeature.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 60),
             topFeature.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             topFeature.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            midFeature.topAnchor.constraint(equalTo: topFeature.bottomAnchor, constant: 30),
+            midFeature.topAnchor.constraint(equalTo: topFeature.bottomAnchor),
             midFeature.leadingAnchor.constraint(equalTo: topFeature.leadingAnchor),
             midFeature.trailingAnchor.constraint(equalTo: topFeature.trailingAnchor),
-            bottomFeature.topAnchor.constraint(equalTo: midFeature.bottomAnchor, constant: 30),
+            bottomFeature.topAnchor.constraint(equalTo: midFeature.bottomAnchor),
             bottomFeature.leadingAnchor.constraint(equalTo: midFeature.leadingAnchor),
             bottomFeature.trailingAnchor.constraint(equalTo: midFeature.trailingAnchor),
-            scrollableFooterView.topAnchor.constraint(greaterThanOrEqualTo: bottomFeature.bottomAnchor, constant: 30),
+            scrollableFooterView.topAnchor.constraint(greaterThanOrEqualTo: bottomFeature.bottomAnchor),
             scrollableFooterView.leadingAnchor.constraint(equalTo: bottomFeature.leadingAnchor),
             scrollableFooterView.trailingAnchor.constraint(equalTo: bottomFeature.trailingAnchor),
             scrollableFooterView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
