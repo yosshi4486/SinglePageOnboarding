@@ -8,13 +8,6 @@
 import UIKit
 
 /// A internal view that manages onboarding.
-///
-/// # The Reasons to Use UICollectionLayoutListConfiguration
-///
-/// Onboarding View should adopt dynamic type and adaptive layout, but implementing them by UIStackView, or some plane views are very troublesome.
-/// UICollectionView with UICollectionLayoutListConfiguration make it easy to implement adaptive onboarding view.
-///
-///
 class OnbarodingView: UIView {
 
     var title: String? {
