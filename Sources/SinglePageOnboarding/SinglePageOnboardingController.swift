@@ -165,9 +165,7 @@ public class SinglePageOnboardingController: UIViewController {
     public override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
 
-        if traitCollection.preferredContentSizeCategory != previousTraitCollection?.preferredContentSizeCategory {
-            onboardingView.useAppropriateFooterRespectingForActualContentSize()
-        }
+        onboardingView.useAppropriateFooterRespectingForActualContentSize()
     }    
 
 }

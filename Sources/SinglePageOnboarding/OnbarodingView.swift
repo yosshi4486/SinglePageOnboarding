@@ -176,16 +176,6 @@ class OnbarodingView: UIView {
         dataSource.apply(snapshot, animatingDifferences: false)
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        /*
-         This call may cause recursive call of `layoutSubviews()`, but only once.
-         Once the appropriate footer is determined, the method will not make any changes, so the recursive call will stop.
-         */
-        useAppropriateFooterRespectingForActualContentSize()
-    }
-
     func useAppropriateFooterRespectingForActualContentSize() {
 
         let footerHeight = footerView.bounds.size.height
