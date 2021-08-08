@@ -163,7 +163,7 @@ public class SinglePageOnboardingController: UIViewController {
     ///   - title: The title of the obnarding content.
     ///   - featureItems: The features of the onboarding experience. The count of items must be 3, if the count of items is bigger, or smaller than 3, a runtime crash will occur. (but it is ignored in production scheme.)
     public init(title: String?, featureItems: [OnboadingFeatureItem]) {
-        precondition(featureItems.count <= 3, "The count of onboarding items must be smaller than 3.")
+        precondition(featureItems.count == 3, "The count of items must be 3.")
 
         self.onboardingView = OnbarodingView(
             title: title,
