@@ -155,7 +155,7 @@ public class SinglePageOnboardingController: UIViewController {
     }
 
     /// The internal view that is loaded in `loadView()`.
-    private var onboardingView: OnbarodingView!
+    private let onboardingView: OnbarodingView
 
     /// Creates *Single Page Onboarding Controller* instance by the given title and feature items.
     ///
